@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ─── Theme palette. Dark is the default; [data-theme="light"] flips it. ─── */
+  :root {
+    --bg: #08080a; --bg-2: #0a0a0d; --bg-3: #0d0d11; --bg-4: #070709; --bg-5: #060608;
+    --panel: #0c0c10; --panel-2: #121118; --toast-bg: #16151c;
+    --text: #f3f2f6; --text-2: #d8d7de; --text-3: #cfced6; --text-4: #a3a2ac;
+    --text-5: #9a99a4; --text-6: #8a8992; --text-7: #7a7984; --text-8: #6a6974; --text-9: #55545e;
+    --line-1: rgba(255,255,255,0.07); --line-2: rgba(255,255,255,0.1);
+    --line-3: rgba(255,255,255,0.16); --line-4: rgba(255,255,255,0.22);
+    --line-5: rgba(255,255,255,0.5); --hover-bg: rgba(255,255,255,0.03);
+    --nav-bg: rgba(8,8,10,0.72);
+    --link: #c4b5fd; --link-hover: #ddd6fe;
+    /* Sharpened radii to match the brand mark. */
+    --r-pill: 2px; --r-lg: 3px; --r-md: 2px; --r-sm: 2px; --r-xs: 2px;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f3f7; --bg-2: #ffffff; --bg-3: #ffffff; --bg-4: #eceaf1; --bg-5: #e6e4ec;
+    --panel: #ffffff; --panel-2: #f1eff6; --toast-bg: #1b1a22;
+    --text: #16151c; --text-2: #24232a; --text-3: #34333b; --text-4: #55545e;
+    --text-5: #5f5e69; --text-6: #6a6974; --text-7: #7a7984; --text-8: #86858f; --text-9: #9a99a4;
+    --line-1: rgba(0,0,0,0.09); --line-2: rgba(0,0,0,0.13);
+    --line-3: rgba(0,0,0,0.18); --line-4: rgba(0,0,0,0.24);
+    --line-5: rgba(0,0,0,0.42); --hover-bg: rgba(0,0,0,0.04);
+    --nav-bg: rgba(255,255,255,0.78);
+    --link: #6d28d9; --link-hover: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; transition: background .25s ease, color .25s ease; }
+  img { display: block; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { color: var(--link-hover); }
+  ::selection { background: color-mix(in oklab, #8b5cf6 55%, transparent); color: #fff; }
+  input::placeholder { color: var(--text-9); }
+  @keyframes vl-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes vl-breathe { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
+  @keyframes vl-breathe2 { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
+  @keyframes vl-slidein { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes vl-fadein { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes vl-toast { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+</style>
+</helmet>
+<div style="--accent: {{ accent }}; --spot: {{ spot }}; position: relative; min-height: 100vh; overflow-x: hidden; background: var(--bg);">
+
+  <!-- REFERRAL GATE -->
+  <sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+    <div style="position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease;">
+      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
+          <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div></div>
+          <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
+        </div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 10px;">REFERRAL ACCESS</div>
+        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Enter referral password</h2>
+        <p style="margin: 0 0 22px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">This catalog is available to referred researchers. Enter the password you were given to continue.</p>
+        <input value="{{ gatePassword }}" onChange="{{ setGatePassword }}" onKeyDown="{{ gateKey }}" type="password" placeholder="Referral password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        <sc-if value="{{ gateError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 9px;">{{ gateError }}</div></sc-if>
+        <label style="display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 12.5px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
+          <input type="checkbox" checked="{{ gateDisclaimer }}" onChange="{{ setGateDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+          I am at least 18 years of age or older, and I understand these products are not for human consumption and are for research purposes only.
+        </label>
+        <label style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; color: var(--text-4); cursor: pointer;">
+          <input type="checkbox" checked="{{ gateRemember }}" onChange="{{ setGateRemember }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
+          Remember me on this device
+        </label>
+        <button onClick="{{ submitGate }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">Enter</button>
+        <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 18px; text-align: center;">RESEARCH USE ONLY</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ANNOUNCEMENT MARQUEE -->
+  <div style="border-bottom: 1px solid var(--line-1); overflow: hidden; background: var(--bg-4);">
+    <div style="display: flex; width: max-content; animation: vl-marquee 38s linear infinite; will-change: transform;">
+      <div style="display: flex; gap: 0; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.22em; color: var(--text-7); padding: 9px 0;">
+        <span style="padding: 0 26px;">RESEARCH USE ONLY — NOT FOR HUMAN CONSUMPTION</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">MADE &amp; TESTED IN THE USA</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">99%+ VERIFIED PURITY</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">COA WITH EVERY BATCH</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+      </div>
+      <div aria-hidden="true" style="display: flex; gap: 0; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.22em; color: var(--text-7); padding: 9px 0;">
+        <span style="padding: 0 26px;">RESEARCH USE ONLY — NOT FOR HUMAN CONSUMPTION</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">MADE &amp; TESTED IN THE USA</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">99%+ VERIFIED PURITY</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+        <span style="padding: 0 26px;">COA WITH EVERY BATCH</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 80%, white);">◆</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <header style="position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); background: var(--nav-bg); border-bottom: 1px solid var(--line-1);">
+    <nav style="max-width: 1300px; margin: 0 auto; padding: 0 40px; height: 66px; display: flex; align-items: center; justify-content: space-between;">
+      <div onClick="{{ goTop }}" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;">
+          <div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div>
+        </div>
+        <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 34px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--text-5);">
+        <span onClick="{{ goCatalog }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">CATALOG</span>
+        <span onClick="{{ goProcess }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">PROCESS</span>
+        <span onClick="{{ goTesting }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">TESTING</span>
+        <span onClick="{{ goReviews }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">REVIEWS</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div onClick="{{ openCart }}" style="display: flex; align-items: center; gap: 9px; cursor: pointer; border: 1px solid var(--line-3); padding: 8px 15px; border-radius: var(--r-pill); transition: border-color .2s, background .2s;" style-hover="border-color: var(--line-5); background: var(--hover-bg);">
+          <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em;">CART</span>
+          <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
+            <span style="min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--accent, #8b5cf6) 90%, white); color: #0b0b0f; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">{{ countLabel }}</span>
+          </sc-if>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section style="position: relative; min-height: calc(100vh - 66px); overflow: hidden; display: flex; flex-direction: column;">
+    <!-- light layers -->
+    <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; z-index: 0; filter: brightness(var(--spot, 1));">
+      <div style="position: absolute; inset: 0; background: radial-gradient(58% 55% at 70% -6%, color-mix(in oklab, var(--accent, #8b5cf6) 26%, transparent) 0%, transparent 68%);"></div>
+      <div style="position: absolute; left: 72%; top: 52%; transform: translate(-50%,-50%); width: 560px; height: 460px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--accent, #8b5cf6) 22%, transparent), transparent 66%); filter: blur(26px); animation: vl-breathe 9s ease-in-out infinite;"></div>
+      <div style="position: absolute; left: 55%; top: -12%; width: 230px; height: 760px; background: linear-gradient(to bottom, var(--line-2), transparent 72%); transform: rotate(15deg); filter: blur(34px); mix-blend-mode: screen; animation: vl-breathe2 11s ease-in-out infinite;"></div>
+      <div style="position: absolute; left: 80%; top: -14%; width: 200px; height: 760px; background: linear-gradient(to bottom, color-mix(in oklab, var(--accent, #8b5cf6) 30%, white 30%), transparent 70%); transform: rotate(-13deg); filter: blur(40px); mix-blend-mode: screen; animation: vl-breathe 13s ease-in-out infinite;"></div>
+      <!-- table -->
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: linear-gradient(to bottom, transparent 0%, rgba(13,13,17,0.5) 26%, var(--bg-2) 62%, var(--bg-5) 100%);"></div>
+      <!-- table light pools -->
+      <div style="position: absolute; left: 72%; bottom: 20%; transform: translateX(-50%); width: 560px; height: 150px; background: radial-gradient(ellipse at center, color-mix(in oklab, var(--accent, #8b5cf6) 20%, white 8%), transparent 68%); filter: blur(20px); opacity: .8;"></div>
+    </div>
+
+    <!-- hero content -->
+    <div style="position: relative; z-index: 2; max-width: 1300px; width: 100%; margin: 0 auto; padding: 54px 40px 0; flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 24px;">
+      <!-- corner crop marks -->
+      <div aria-hidden="true" style="position: absolute; top: 40px; left: 40px; width: 16px; height: 16px; border-top: 1px solid var(--line-4); border-left: 1px solid var(--line-4);"></div>
+      <div aria-hidden="true" style="position: absolute; top: 40px; right: 40px; width: 16px; height: 16px; border-top: 1px solid var(--line-4); border-right: 1px solid var(--line-4);"></div>
+
+      <div style="flex: 1 1 440px; min-width: 300px; display: flex; flex-direction: column; justify-content: center; padding: 20px 0 34px;">
+        <div style="max-width: 640px;">
+          <div style="display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line-3); border-radius: var(--r-pill); padding: 7px 15px; margin-bottom: 30px;">
+            <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white); font-size: 11px;">◇</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--text-3);">MADE &amp; TESTED IN THE USA</span>
+          </div>
+          <h1 style="margin: 0; font-weight: 300; font-size: clamp(42px, 6vw, 84px); line-height: 1.0; letter-spacing: -0.025em; text-wrap: balance;">The <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-weight: 400;">standard</span> for research peptides.</h1>
+          <p style="margin: 26px 0 0; max-width: 50ch; font-size: 17px; line-height: 1.6; color: var(--text-4);">Synthesized and lyophilized in the United States, then independently verified for purity and identity — a certificate of analysis with every batch.</p>
+          <div style="display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap;">
+            <button onClick="{{ goCatalog }}" style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px 26px; border-radius: var(--r-pill); cursor: pointer; transition: transform .2s, box-shadow .2s; box-shadow: 0 8px 30px color-mix(in oklab, var(--accent, #8b5cf6) 35%, transparent);" style-hover="transform: translateY(-2px); box-shadow: 0 12px 40px color-mix(in oklab, var(--accent, #8b5cf6) 50%, transparent);">Explore the catalog</button>
+            <button onClick="{{ goTesting }}" style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; color: var(--text); background: transparent; border: 1px solid var(--line-4); padding: 14px 26px; border-radius: var(--r-pill); cursor: pointer; transition: border-color .2s, background .2s;" style-hover="border-color: var(--line-5); background: var(--hover-bg);">See the testing</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- vial stage -->
+      <div style="flex: 1 1 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding-bottom: 40px; min-height: 380px;">
+        <!-- vials -->
+        <div style="display: flex; align-items: flex-end; justify-content: center; gap: 26px;">
+          <!-- BPC-157 -->
+          <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 1;">
+            <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(55,162,74,0.5), transparent 68%); filter: blur(20px); z-index: 0;"></div>
+            <img src="assets/bpc-157.png" alt="Vitalis Labs BPC-157 10mg" style="position: relative; z-index: 1; height: 300px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
+          </div>
+          <!-- GHK-Cu center -->
+          <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 3; margin: 0 -6px;">
+            <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--accent, #8b5cf6) 55%, transparent), transparent 66%); filter: blur(22px); z-index: 0;"></div>
+            <img src="assets/ghk-cu.png" alt="Vitalis Labs GHK-Cu 100mg" style="position: relative; z-index: 1; height: 366px; width: auto; filter: drop-shadow(0 36px 30px rgba(0,0,0,0.7));">
+          </div>
+          <!-- RETA 30mg -->
+          <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 1;">
+            <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 155px; height: 155px; border-radius: 50%; background: radial-gradient(circle, rgba(232,98,42,0.5), transparent 68%); filter: blur(20px); z-index: 0;"></div>
+            <img src="assets/reta-30.png" alt="Vitalis Labs Retatrutide 30mg" style="position: relative; z-index: 1; height: 312px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
+          </div>
+        </div>
+        <!-- table the vials rest on (top edge sits at the vial bases, fades down and out to the sides) -->
+        <div aria-hidden="true" style="width: 460px; max-width: 92%; z-index: 0; pointer-events: none;">
+          <div style="height: 1px; background: linear-gradient(to right, transparent, var(--line-4) 24%, var(--line-4) 76%, transparent);"></div>
+          <div style="height: 44px; background: linear-gradient(to bottom, var(--line-1), transparent 88%);"></div>
+        </div>
+
+        <!-- hero footer annotations -->
+        <div style="position: absolute; left: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">LOT-VERIFIED / HPLC · MS</div>
+        <div style="position: absolute; right: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">01 / SELECT</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAT STRIP -->
+  <section style="border-top: 1px solid var(--line-1); border-bottom: 1px solid var(--line-1);">
+    <div style="max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr);">
+      <div style="padding: 30px 40px; border-right: 1px solid var(--line-1);">
+        <div style="font-size: 30px; font-weight: 400; letter-spacing: -0.02em;">99%+</div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-7); margin-top: 6px;">VERIFIED PURITY</div>
+      </div>
+      <div style="padding: 30px 40px; border-right: 1px solid var(--line-1);">
+        <div style="font-size: 30px; font-weight: 400; letter-spacing: -0.02em;">100%</div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-7); margin-top: 6px;">BATCH TESTED</div>
+      </div>
+      <div style="padding: 30px 40px; border-right: 1px solid var(--line-1);">
+        <div style="font-size: 30px; font-weight: 400; letter-spacing: -0.02em;">48H</div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-7); margin-top: 6px;">COLD-CHAIN DISPATCH</div>
+      </div>
+      <div style="padding: 30px 40px;">
+        <div style="font-size: 30px; font-weight: 400; letter-spacing: -0.02em; color: color-mix(in oklab, var(--accent, #8b5cf6) 75%, white);">USA</div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-7); margin-top: 6px;">SYNTHESIZED &amp; TESTED</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATALOG -->
+  <section id="catalog" style="max-width: 1300px; margin: 0 auto; padding: 116px 40px 96px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; flex-wrap: wrap; margin-bottom: 52px;">
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">01 — CATALOG</div>
+        <h2 style="margin: 0; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">The Vitalis catalog</h2>
+      </div>
+      <p style="margin: 0; max-width: 34ch; font-size: 14px; line-height: 1.6; color: var(--text-6); font-family: 'Space Mono', monospace; letter-spacing: 0.02em;">All products supplied for laboratory research use only. Certificate of analysis included.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+      <sc-for list="{{ products }}" as="item" hint-placeholder-count="4">
+        <div style="--cap: {{ item.cap }}; border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-3); overflow: hidden; display: flex; flex-direction: column; transition: border-color .3s ease, background .3s ease;" style-hover="border-color: var(--line-4); background: var(--panel-2);">
+          <div style="position: relative; height: 236px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--cap, #8b5cf6) 42%, transparent), transparent 66%); filter: blur(20px);"></div>
+            <sc-if value="{{ item.img }}" hint-placeholder-val="{{ false }}"><img src="{{ item.img }}" alt="{{ item.name }}" style="position: relative; z-index: 1; height: 196px; width: auto; filter: drop-shadow(0 18px 18px rgba(0,0,0,0.55));"></sc-if>
+          </div>
+          <div style="padding: 22px; border-top: 1px solid var(--line-1); display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+              <div>
+                <div style="font-size: 19px; font-weight: 500;">{{ item.name }}</div>
+                <div style="font-size: 12.5px; color: var(--text-6); margin-top: 3px;">{{ item.sub }}</div>
+              </div>
+              <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-3); border: 1px solid var(--line-3); padding: 3px 8px; border-radius: var(--r-xs); white-space: nowrap;">{{ item.dose }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; color: var(--text-8);">
+              <span>HPLC {{ item.purity }}</span>
+              <span>{{ item.stockLabel }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; gap: 10px;">
+              <span style="font-size: 21px; font-weight: 500; letter-spacing: -0.01em;">{{ item.priceLabel }}</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <select value="{{ item.selQty }}" onChange="{{ item.setQty }}" disabled="{{ item.outOfStock }}" style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); background: var(--bg); border: 1px solid var(--line-3); padding: 8px 8px; border-radius: var(--r-pill); cursor: pointer; outline: none;">
+                  <sc-for list="{{ item.qtyOptions }}" as="opt"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                </select>
+                <button onClick="{{ item.add }}" disabled="{{ item.outOfStock }}" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text); background: transparent; border: 1px solid var(--line-4); padding: 9px 16px; border-radius: var(--r-pill); cursor: pointer; transition: background .2s, border-color .2s, color .2s;" style-hover="background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border-color: transparent; color: #0b0b0f;">{{ item.addLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" style="border-top: 1px solid var(--line-1); background: var(--bg-2);">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
+      <div style="max-width: 640px; margin-bottom: 64px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">02 — PROCESS</div>
+        <h2 style="margin: 0; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">From synthesis to your bench.</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
+        <div style="background: var(--bg-2); padding: 34px 28px; display: flex; flex-direction: column; gap: 16px;">
+          <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">01</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 500;">U.S. Synthesis</h3>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Every peptide is synthesized to spec in United States facilities under controlled conditions.</p>
+        </div>
+        <div style="background: var(--bg-2); padding: 34px 28px; display: flex; flex-direction: column; gap: 16px;">
+          <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">02</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 500;">Lyophilization</h3>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Freeze-dried for stability and precise reconstitution, sealed under inert atmosphere.</p>
+        </div>
+        <div style="background: var(--bg-2); padding: 34px 28px; display: flex; flex-direction: column; gap: 16px;">
+          <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">03</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 500;">Independent Assay</h3>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Third-party HPLC and mass spectrometry confirm purity and identity, batch by batch.</p>
+        </div>
+        <div style="background: var(--bg-2); padding: 34px 28px; display: flex; flex-direction: column; gap: 16px;">
+          <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">04</span>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 500;">Cold-Chain Dispatch</h3>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Temperature-controlled packaging ships within 48 hours, tracked to your bench.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTING / COA -->
+  <section id="testing" style="border-top: 1px solid var(--line-1);">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 116px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;">
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">03 — VERIFICATION</div>
+        <h2 style="margin: 0 0 24px; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">Every batch, independently verified.</h2>
+        <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.65; color: var(--text-4); max-width: 46ch;">We don't ask you to take purity on faith. Each production lot is sent to an accredited third-party lab and released only against its certificate of analysis.</p>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 38px;">
+          <div style="display: flex; align-items: center; gap: 14px; font-size: 14.5px; color: var(--text-3);"><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 12px;">◆</span> HPLC purity assay ≥ 99%</div>
+          <div style="display: flex; align-items: center; gap: 14px; font-size: 14.5px; color: var(--text-3);"><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 12px;">◆</span> Mass-spectrometry identity confirmation</div>
+          <div style="display: flex; align-items: center; gap: 14px; font-size: 14.5px; color: var(--text-3);"><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 12px;">◆</span> Endotoxin &amp; sterility screening</div>
+          <div style="display: flex; align-items: center; gap: 14px; font-size: 14.5px; color: var(--text-3);"><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 12px;">◆</span> U.S.-based accredited laboratory</div>
+        </div>
+        <button onClick="{{ goCatalog }}" style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: var(--text); background: transparent; border: 1px solid var(--line-4); padding: 13px 24px; border-radius: var(--r-pill); cursor: pointer; transition: border-color .2s, background .2s;" style-hover="border-color: var(--line-5); background: var(--hover-bg);">Download sample COA</button>
+      </div>
+      <!-- COA card -->
+      <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.45);">
+        <div style="padding: 20px 26px; background: color-mix(in oklab, var(--accent, #8b5cf6) 26%, var(--bg-3)); border-bottom: 1px solid var(--line-2); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-3);">CERTIFICATE OF ANALYSIS</div>
+            <div style="font-size: 16px; font-weight: 600; letter-spacing: 0.12em; margin-top: 4px;">VITALIS LABS</div>
+          </div>
+          <div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 11px; height: 11px; border-radius: 50%; background: var(--text);"></div></div>
+        </div>
+        <div style="padding: 8px 26px 22px; font-family: 'Space Mono', monospace; font-size: 12.5px;">
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">COMPOUND</span><span style="color: var(--text);">GHK-Cu</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">BATCH</span><span style="color: var(--text);">VL-26-0912</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">PURITY (HPLC)</span><span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 68%, white);">99.6%</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">IDENTITY (MS)</span><span style="color: var(--text);">CONFIRMED</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">APPEARANCE</span><span style="color: var(--text);">WHITE LYOPHILIZED</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-1);"><span style="color: var(--text-8);">ENDOTOXIN</span><span style="color: var(--text);">&lt; 0.5 EU/mg</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 13px 0;"><span style="color: var(--text-8);">RELEASED</span><span style="color: var(--text);">2026-05-14</span></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line-3);">
+            <span style="color: var(--text-8); font-size: 11px;">QC APPROVED</span>
+            <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); font-size: 11px; letter-spacing: 0.12em;">✓ RELEASED FOR SALE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section id="reviews" style="border-top: 1px solid var(--line-1); background: var(--bg-2);">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
+      <div style="max-width: 640px; margin-bottom: 56px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">04 — FIELD NOTES</div>
+        <h2 style="margin: 0; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">Trusted by research labs.</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
+          <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Purity matched the COA on our own re-test. First vendor we haven't had to second-guess."</p>
+          <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">PRINCIPAL INVESTIGATOR / INDEPENDENT LAB</div>
+        </div>
+        <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
+          <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Consistent lyophilization batch to batch, and the documentation is immaculate every time."</p>
+          <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">RESEARCH ASSOCIATE / UNIVERSITY GROUP</div>
+        </div>
+        <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
+          <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Cold-chain arrived intact and reconstitution was clean. Exactly what the work demands."</p>
+          <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">LAB MANAGER / BIOTECH STARTUP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="border-top: 1px solid var(--line-1);">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 80px 40px 40px;">
+      <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 56px; border-bottom: 1px solid var(--line-1);">
+        <div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+            <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div></div>
+            <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
+          </div>
+          <p style="margin: 0; max-width: 34ch; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Research-grade peptides, synthesized and independently verified in the United States.</p>
+        </div>
+        <div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">CATALOG</div>
+          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span onClick="{{ goCatalog }}" style="cursor: pointer;" style-hover="color: var(--text);">BPC-157</span><span onClick="{{ goCatalog }}" style="cursor: pointer;" style-hover="color: var(--text);">GHK-Cu</span><span onClick="{{ goCatalog }}" style="cursor: pointer;" style-hover="color: var(--text);">Retatrutide</span></div>
+        </div>
+        <div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">COMPANY</div>
+          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span onClick="{{ goProcess }}" style="cursor: pointer;" style-hover="color: var(--text);">Process</span><span onClick="{{ goTesting }}" style="cursor: pointer;" style-hover="color: var(--text);">Testing</span><span onClick="{{ goReviews }}" style="cursor: pointer;" style-hover="color: var(--text);">Reviews</span></div>
+        </div>
+        <div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">SUPPORT</div>
+          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span style="cursor: pointer;" style-hover="color: var(--text);">Shipping</span><span style="cursor: pointer;" style-hover="color: var(--text);">Contact</span><span style="cursor: pointer;" style-hover="color: var(--text);">FAQ</span></div>
+        </div>
+      </div>
+      <p style="margin: 28px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--text-9); max-width: 88ch;">All products sold by Vitalis Labs are chemical reagents intended exclusively for laboratory research and development use only. Products are not for human or veterinary consumption and are not intended for diagnostic or therapeutic use. The statements made on this website have not been evaluated by the US Food and Drug Administration. The products offered are not intended to diagnose, treat, cure, or prevent any disease. All product names, specifications, and figures shown are illustrative for this design.</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 12px;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">© 2026 VITALIS LABS · MADE &amp; TESTED IN THE USA</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--text-8); border: 1px solid var(--line-2); padding: 4px 9px; border-radius: var(--r-xs);">RESEARCH USE ONLY</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CART DRAWER -->
+  <sc-if value="{{ cartOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 90;">
+      <div onClick="{{ closeCart }}" style="position: absolute; inset: 0; background: rgba(4,4,6,0.6); backdrop-filter: blur(3px); animation: vl-fadein .25s ease;"></div>
+      <aside style="position: absolute; top: 0; right: 0; height: 100%; width: min(430px, 100vw); background: var(--panel); border-left: 1px solid var(--line-2); display: flex; flex-direction: column; animation: vl-slidein .32s cubic-bezier(.2,.8,.2,1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 22px 26px; border-bottom: 1px solid var(--line-1);">
+          <span style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.16em; color: var(--text-3);">
+            <sc-if value="{{ isCart }}" hint-placeholder-val="{{ true }}">YOUR CART ({{ countLabel }})</sc-if>
+            <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">CHECKOUT</sc-if>
+            <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">CONFIRMED</sc-if>
+          </span>
+          <span onClick="{{ closeCart }}" style="cursor: pointer; color: var(--text-6); font-size: 18px; line-height: 1; transition: color .2s;" style-hover="color: var(--text);">✕</span>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto;">
+          <!-- CART VIEW -->
+          <sc-if value="{{ isCart }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 60px 26px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line-3); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; color: var(--text-8);">0</div>
+                <p style="margin: 0; color: var(--text-6); font-size: 14px;">Your cart is empty.</p>
+                <button onClick="{{ closeCart }}" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text); background: transparent; border: 1px solid var(--line-4); padding: 11px 20px; border-radius: var(--r-pill); cursor: pointer;">BROWSE CATALOG</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ retaUpsell }}" hint-placeholder-val="{{ false }}">
+                <div style="margin: 14px 26px 0; padding: 13px 15px; background: color-mix(in oklab, var(--accent, #8b5cf6) 12%, var(--bg)); border: 1px solid color-mix(in oklab, var(--accent, #8b5cf6) 40%, transparent); border-radius: var(--r-sm); display: flex; gap: 11px; align-items: flex-start;">
+                  <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 12px; margin-top: 1px;">◆</span>
+                  <div style="font-size: 12.5px; line-height: 1.5; color: var(--text-3);">More for less: the <strong>Reta 30 mg is $200</strong> — better value than stacking 10 mg vials.
+                    <span onClick="{{ addReta30 }}" style="display: inline-block; margin-top: 6px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border-bottom: 1px solid currentColor;">ADD 30 MG →</span>
+                  </div>
+                </div>
+              </sc-if>
+              <div style="padding: 8px 0;">
+                <sc-for list="{{ lines }}" as="line" hint-placeholder-count="2">
+                  <div style="display: flex; gap: 14px; padding: 20px 26px; border-bottom: 1px solid var(--line-1);">
+                    <sc-if value="{{ line.img }}" hint-placeholder-val="{{ false }}">
+                      <div style="position: relative; flex-shrink: 0; width: 54px; height: 64px; border: 1px solid var(--line-1); border-radius: var(--r-sm); background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="{{ line.img }}" alt="{{ line.name }}" style="height: 54px; width: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));">
+                      </div>
+                    </sc-if>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+                      <div style="display: flex; justify-content: space-between; gap: 10px;">
+                        <div>
+                          <div style="font-size: 14.5px; font-weight: 500;">{{ line.name }} <span style="color: var(--text-6); font-weight: 400;">· {{ line.dose }}</span></div>
+                          <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--text-8); margin-top: 3px;">HPLC {{ line.purity }}</div>
+                        </div>
+                        <span style="font-size: 14px; font-weight: 500; white-space: nowrap;">{{ line.lineLabel }}</span>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                        <div style="display: flex; align-items: center; border: 1px solid var(--line-3); border-radius: var(--r-pill); overflow: hidden;">
+                          <span onClick="{{ line.dec }}" style="cursor: pointer; padding: 5px 12px; color: var(--text-4); font-family: 'Space Mono', monospace; transition: color .2s;" style-hover="color: var(--text);">−</span>
+                          <span style="padding: 5px 6px; font-family: 'Space Mono', monospace; font-size: 12px; min-width: 20px; text-align: center;">{{ line.qty }}</span>
+                          <span onClick="{{ line.inc }}" style="cursor: pointer; padding: 5px 12px; color: var(--text-4); font-family: 'Space Mono', monospace; transition: color .2s;" style-hover="color: var(--text);">+</span>
+                        </div>
+                        <span onClick="{{ line.remove }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); transition: color .2s;" style-hover="color: #e8622a;">REMOVE</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <!-- CHECKOUT VIEW -->
+          <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 24px 26px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8);">CONTACT</div>
+              <div>
+                <input value="{{ form.email }}" onChange="{{ setEmail }}" type="email" placeholder="Email address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <sc-if value="{{ errEmail }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errEmail }}</div></sc-if>
+              </div>
+              <div>
+                <input value="{{ form.phone }}" onChange="{{ setPhone }}" type="tel" placeholder="Phone number" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <sc-if value="{{ errPhone }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errPhone }}</div></sc-if>
+              </div>
+
+              <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-top: 6px;">SHIPPING</div>
+              <div>
+                <input value="{{ form.fullName }}" onChange="{{ setFullName }}" placeholder="Full name / Institution" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <sc-if value="{{ errFullName }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errFullName }}</div></sc-if>
+              </div>
+              <div>
+                <input value="{{ form.address }}" onChange="{{ setAddress }}" placeholder="Street address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <sc-if value="{{ errAddress }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errAddress }}</div></sc-if>
+              </div>
+              <div style="display: flex; gap: 12px;">
+                <div style="flex: 1; min-width: 0;">
+                  <input value="{{ form.city }}" onChange="{{ setCity }}" placeholder="City" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                  <sc-if value="{{ errCity }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errCity }}</div></sc-if>
+                </div>
+                <div style="width: 84px;">
+                  <input value="{{ form.state }}" onChange="{{ setState2 }}" placeholder="State" maxlength="2" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none; text-transform: uppercase;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                  <sc-if value="{{ errState }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errState }}</div></sc-if>
+                </div>
+                <div style="width: 110px;">
+                  <input value="{{ form.zip }}" onChange="{{ setZip }}" placeholder="ZIP" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                  <sc-if value="{{ errZip }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errZip }}</div></sc-if>
+                </div>
+              </div>
+
+              <sc-if value="{{ outsideUS }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 11px; align-items: flex-start; padding: 12px 14px; background: color-mix(in oklab, #e8622a 12%, var(--bg)); border: 1px solid color-mix(in oklab, #e8622a 45%, transparent); border-radius: var(--r-sm);">
+                  <span style="color: #e8622a; font-size: 12px; margin-top: 1px;">!</span>
+                  <span style="font-size: 12px; line-height: 1.5; color: var(--text-3);">That doesn't look like a US state. We currently ship to US addresses only — please double-check your state.</span>
+                </div>
+              </sc-if>
+
+              <div>
+                <input value="{{ form.referral }}" onChange="{{ setReferral }}" placeholder="Referral — full name of who referred you (optional)" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+              </div>
+
+              <div style="display: flex; gap: 11px; align-items: flex-start; margin-top: 8px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line-1); border-radius: var(--r-sm);">
+                <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 75%, white); font-size: 12px; margin-top: 1px;">◆</span>
+                <span style="font-size: 12px; line-height: 1.5; color: var(--text-6);">No payment is collected here. After placing your order you'll receive an order number and Venmo details — your order is prepared once payment is received.<br><br>Orders may be rejected. In the off chance that happens, a full refund will be given (no Venmo fees will be reimbursed).</span>
+              </div>
+
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; font-size: 12px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
+                <input type="checkbox" checked="{{ ruoConfirmed }}" onChange="{{ setRuo }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
+                I confirm these products are for laboratory research use only.
+              </label>
+              <sc-if value="{{ errRuo }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px;">{{ errRuo }}</div></sc-if>
+
+              <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; font-size: 12px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
+                <input type="checkbox" checked="{{ disclaimerConfirmed }}" onChange="{{ setDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                I am at least 18 years of age or older, and these products are not for human consumption and are for research purposes only.
+              </label>
+              <sc-if value="{{ errDisclaimer }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px;">{{ errDisclaimer }}</div></sc-if>
+            </div>
+          </sc-if>
+
+          <!-- DONE VIEW -->
+          <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 34px 26px 30px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+              <div style="width: 58px; height: 58px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 82%, white); color: #0b0b0f; display: flex; align-items: center; justify-content: center; font-size: 26px;">✓</div>
+              <div style="text-align: center;">
+                <div style="font-size: 20px; font-weight: 500;">Order received</div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 15px; letter-spacing: 0.1em; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); margin-top: 8px;">{{ orderNo }}</div>
+              </div>
+
+              <!-- amount to send -->
+              <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-md);">
+                <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--text-6);">AMOUNT TO SEND</span>
+                <span style="font-size: 22px; font-weight: 600;">{{ orderAmountLabel }}</span>
+              </div>
+
+              <!-- venmo QR + direct link -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                <div style="padding: 12px; background: #ffffff; border-radius: var(--r-md);">
+                  <img src="assets/venmo.png" alt="Venmo payment QR code" style="width: 180px; height: 180px; display: block;">
+                </div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: var(--text-3);">Scan to pay {{ venmoHandle }}</div>
+                <a href="{{ venmoLink }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; color: #0b0b0f; background: #3d95ce; padding: 11px 20px; border-radius: var(--r-pill); transition: transform .15s, box-shadow .2s; box-shadow: 0 8px 24px rgba(61,149,206,0.35);" style-hover="transform: translateY(-1px); box-shadow: 0 12px 32px rgba(61,149,206,0.5);">
+                  <span style="font-weight: 700;">venmo</span>
+                  <span style="opacity: 0.85;">·</span>
+                  Open in Venmo
+                </a>
+                <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--text-8);">on your phone, this opens the Venmo app</div>
+              </div>
+
+              <!-- pre-written message -->
+              <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8);">PASTE THIS AS YOUR VENMO NOTE</span>
+                  <span onClick="{{ copyNote }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border: 1px solid var(--line-3); padding: 5px 10px; border-radius: var(--r-xs);" style-hover="border-color: var(--line-5);">COPY</span>
+                </div>
+                <pre style="margin: 0; white-space: pre-wrap; word-break: break-word; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 14px 16px; font-family: 'Space Mono', monospace; font-size: 12.5px; line-height: 1.7; color: var(--text-2);">{{ orderNote }}</pre>
+              </div>
+
+              <!-- confirmation steps: all must be checked to finish -->
+              <div style="width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-md);">
+                <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8);">CONFIRM EACH STEP</div>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
+                  <input type="checkbox" checked="{{ pay1 }}" onChange="{{ setPay1 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                  I sent <strong>{{ orderAmountLabel }}</strong> to {{ venmoHandle }} on Venmo.
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
+                  <input type="checkbox" checked="{{ pay2 }}" onChange="{{ setPay2 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                  I pasted the order note above into my Venmo payment.
+                </label>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
+                  <input type="checkbox" checked="{{ pay3 }}" onChange="{{ setPay3 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                  I understand my order is prepared once payment is received, and may be refunded in full if it cannot be filled.
+                </label>
+              </div>
+
+              <p style="margin: 0; font-size: 12.5px; color: var(--text-6); max-width: 38ch; line-height: 1.6; text-align: center;">Send the amount above to {{ venmoHandle }} and paste the note so we can match your payment. Your order is prepared once payment is received.</p>
+              <sc-if value="{{ payNotConfirmed }}" hint-placeholder-val="{{ true }}">
+                <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); text-align: center;">CHECK ALL THREE STEPS TO FINISH</div>
+              </sc-if>
+              <button onClick="{{ closeCart }}" disabled="{{ payNotConfirmed }}" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 12px 24px; border-radius: var(--r-pill); cursor: pointer; opacity: {{ payDoneOpacity }};">DONE</button>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- FOOTER: cart -->
+        <sc-if value="{{ isCart }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 22px 26px; border-top: 1px solid var(--line-1); background: var(--bg-2);">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-6); margin-bottom: 3px;"><span>Subtotal</span><span style="color: var(--text);">{{ subtotalLabel }}</span></div>
+              <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); margin-bottom: 10px;">TAXES INCLUDED</div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-6); margin-bottom: 10px;"><span>Cold-chain shipping</span><span style="color: var(--text);">{{ shippingLabel }}</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; margin-bottom: 16px; padding-top: 10px; border-top: 1px solid var(--line-1);"><span>Total</span><span>{{ totalLabel }}</span></div>
+              <button onClick="{{ goCheckout }}" style="width: 100%; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">Proceed to checkout</button>
+            </div>
+          </sc-if>
+        </sc-if>
+        <!-- FOOTER: checkout -->
+        <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 22px 26px; border-top: 1px solid var(--line-1); background: var(--bg-2);">
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-6); margin-bottom: 3px;"><span>Subtotal</span><span style="color: var(--text);">{{ subtotalLabel }}</span></div>
+            <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); margin-bottom: 8px;">TAXES INCLUDED</div>
+            <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-6); margin-bottom: 10px;"><span>Cold-chain shipping</span><span style="color: var(--text);">{{ shippingLabel }}</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; margin-bottom: 16px; padding-top: 10px; border-top: 1px solid var(--line-1);"><span>Total</span><span>{{ totalLabel }}</span></div>
+            <sc-if value="{{ submitError }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; line-height: 1.5; color: #e8622a; margin-bottom: 12px;">{{ submitError }}</div></sc-if>
+            <button onClick="{{ placeOrder }}" disabled="{{ submitting }}" style="width: 100%; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; margin-bottom: 10px;">{{ placeOrderLabel }}</button>
+            <button onClick="{{ backToCart }}" style="width: 100%; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text-6); background: transparent; border: none; padding: 6px; cursor: pointer;">← BACK TO CART</button>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 95; background: var(--toast-bg); border: 1px solid rgba(255,255,255,0.14); color: #f3f2f6; font-size: 13px; padding: 13px 22px; border-radius: var(--r-pill); box-shadow: 0 18px 50px rgba(0,0,0,0.5); animation: vl-toast .3s ease; display: flex; align-items: center; gap: 10px;">
+      <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 75%, white);">◆</span>{{ toast }}
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accent&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#8b5cf6&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#8b5cf6&quot;, &quot;#7c3aed&quot;, &quot;#a855f7&quot;, &quot;#6366f1&quot;], &quot;section&quot;: &quot;Theme&quot; },
+  &quot;spot&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1, &quot;min&quot;: 0.4, &quot;max&quot;: 1.6, &quot;step&quot;: 0.05, &quot;unit&quot;: &quot;×&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Theme&quot; },
+  &quot;showReflections&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Theme&quot; }
+}">
+class Component extends DCLogic {
+  // ─── CONFIG ─────────────────────────────────────────────────────────────
+  // Fill these in after creating your Supabase project (see SETUP.md).
+  // The anon key is designed to be public; the `orders` table is INSERT-only
+  // (write-only) via RLS, so this page can create orders but never read/edit them.
+  SUPABASE_URL = 'https://roocyinfalcqgpdajoar.supabase.co';
+  SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvb2N5aW5mYWxjcWdwZGFqb2FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NTkzMTMsImV4cCI6MjEwMDEzNTMxM30.wTLcw_KzKxix7mxUvCoXDN2tBT8Gqvr6ZzNNWTwdicU';
+  VENMO_HANDLE = '@Vitalislabs';
+  VENMO_LINK = 'https://venmo.com/code?user_id=4645604667950183480&created=1784567282.74056&printed=1';
+  CART_KEY = 'vitalis_cart';
+  ORDERS_KEY = 'vitalis_orders';
+  // Referral gate. NOTE: this is a client-side "soft gate" — the password lives in
+  // the page source, so it deters casual/unreferred visitors but is not real security.
+  REFERRAL_PASSWORD = 'V1T4L1S';
+  UNLOCK_KEY = 'vitalis_unlocked';
+  // ────────────────────────────────────────────────────────────────────────
+
+  emptyForm = { fullName: '', email: '', phone: '', address: '', city: '', state: '', zip: '', referral: '' };
+
+  state = {
+    unlocked: this.loadUnlock(),
+    gatePassword: '',
+    gateRemember: true,
+    gateDisclaimer: false,
+    gateError: null,
+    cart: this.loadCart(),
+    cartOpen: false,
+    view: 'cart',
+    orderNo: null,
+    toast: null,
+    form: Object.assign({}, this.emptyForm),
+    ruoConfirmed: true,
+    disclaimerConfirmed: false,
+    submitting: false,
+    submitError: null,
+    attempted: false,
+    lastOrder: null,
+    products: null,          // live catalog once loaded from Supabase
+    qtySel: {},              // per-product quantity chosen in the catalog dropdown
+    payChecks: {},           // confirmation checkboxes on the payment screen
+    theme: 'dark',           // dark is the only theme surfaced in the UI
+  };
+
+  componentDidMount() {
+    this.applyTheme(this.state.theme);
+    this.loadProducts();
+  }
+
+  // ─── Theme (dark default + light) ───────────────────────────────────────────
+  THEME_KEY = 'vitalis_theme';
+  loadTheme() {
+    try { return window.localStorage.getItem(this.THEME_KEY) === 'light' ? 'light' : 'dark'; } catch (e) { return 'dark'; }
+  }
+  applyTheme(theme) {
+    try { document.documentElement.setAttribute('data-theme', theme); } catch (e) {}
+  }
+  toggleTheme() {
+    const next = this.state.theme === 'light' ? 'dark' : 'light';
+    try { window.localStorage.setItem(this.THEME_KEY, next); } catch (e) {}
+    this.applyTheme(next);
+    this.setState({ theme: next });
+  }
+
+  // ─── localStorage cart persistence ──────────────────────────────────────
+  loadCart() {
+    try {
+      const raw = window.localStorage.getItem(this.CART_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+  saveCart(cart) {
+    try { window.localStorage.setItem(this.CART_KEY, JSON.stringify(cart)); } catch (e) {}
+  }
+
+  // ─── Referral gate ──────────────────────────────────────────────────────
+  loadUnlock() {
+    try { return window.localStorage.getItem(this.UNLOCK_KEY) === '1'; } catch (e) { return false; }
+  }
+  setGatePassword(v) { this.setState({ gatePassword: v, gateError: null }); }
+  setGateRemember(v) { this.setState({ gateRemember: !!v }); }
+  setGateDisclaimer(v) { this.setState({ gateDisclaimer: !!v, gateError: null }); }
+  submitGate() {
+    if (!this.state.gateDisclaimer) {
+      this.setState({ gateError: 'Please confirm you are 18+ and agree these are for research use only.' });
+      return;
+    }
+    if (this.state.gatePassword === this.REFERRAL_PASSWORD) {
+      if (this.state.gateRemember) { try { window.localStorage.setItem(this.UNLOCK_KEY, '1'); } catch (e) {} }
+      this.setState({ unlocked: true, gateError: null, gatePassword: '' });
+    } else {
+      this.setState({ gateError: 'Incorrect password. Please check with your referrer.' });
+    }
+  }
+
+  // Flat cold-chain shipping added to every order.
+  SHIPPING_CENTS = 1500;
+  // Storage bucket holding the catalog images (see supabase-products.sql).
+  IMAGES_BUCKET = 'product-images';
+  // Cap the per-item quantity dropdown so it never runs away even with deep stock.
+  MAX_QTY = 10;
+  // Valid US state / territory codes — used to warn on non-US addresses.
+  US_STATES = { AL:1,AK:1,AZ:1,AR:1,CA:1,CO:1,CT:1,DE:1,FL:1,GA:1,HI:1,ID:1,IL:1,IN:1,IA:1,KS:1,KY:1,LA:1,ME:1,MD:1,MA:1,MI:1,MN:1,MS:1,MO:1,MT:1,NE:1,NV:1,NH:1,NJ:1,NM:1,NY:1,NC:1,ND:1,OH:1,OK:1,OR:1,PA:1,RI:1,SC:1,SD:1,TN:1,TX:1,UT:1,VT:1,VA:1,WA:1,WV:1,WI:1,WY:1,DC:1,PR:1,VI:1,GU:1,AS:1,MP:1 };
+
+  // Fallback catalog — shown if the live products fetch fails. The real catalog
+  // (including live stock) is loaded from Supabase in componentDidMount().
+  defaultProducts = [
+    { id: 'bpc',    name: 'BPC-157', sub: '15 Amino-Acid Synthetic',          dose: '10 mg',  purity: '99.9%', price: 10000, cap: '#37a24a', img: 'assets/bpc-157.png', stock: 25 },
+    { id: 'ghk',    name: 'GHK-Cu',  sub: 'Copper Tripeptide-1',              dose: '100 mg', purity: '99.9%', price: 10000, cap: '#8b5cf6', img: 'assets/ghk-cu.png',  stock: 25 },
+    { id: 'reta10', name: 'Reta',    sub: 'Triple-Agonist Research Compound', dose: '10 mg',  purity: '99.9%', price: 10000, cap: '#e8622a', img: 'assets/reta-10.png', stock: 25 },
+    { id: 'reta30', name: 'Reta',    sub: 'Triple-Agonist Research Compound', dose: '30 mg',  purity: '99.9%', price: 20000, cap: '#e8622a', img: 'assets/reta-30.png', stock: 25 },
+  ];
+
+  // The catalog the UI renders against: live products once loaded, else fallback.
+  getProducts() { return (this.state.products && this.state.products.length) ? this.state.products : this.defaultProducts; }
+
+  fmt(c) { return '$' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  byId(id) { return this.getProducts().find(function (p) { return p.id === id; }); }
+  stockOf(id) { const p = this.byId(id); return p ? (p.stock == null ? this.MAX_QTY : p.stock) : 0; }
+  qtyInCart(id) { const c = this.state.cart.find(function (c) { return c.id === id; }); return c ? c.qty : 0; }
+
+  // ─── Live catalog + stock from Supabase ─────────────────────────────────────
+  imageUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//.test(path)) return path;
+    return this.SUPABASE_URL + '/storage/v1/object/public/' + this.IMAGES_BUCKET + '/' + path;
+  }
+  loadProducts() {
+    const self = this;
+    fetch(this.SUPABASE_URL + '/rest/v1/products?active=eq.true&order=sort_order.asc', {
+      headers: { 'apikey': this.SUPABASE_ANON, 'Authorization': 'Bearer ' + this.SUPABASE_ANON },
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (rows) {
+      if (!Array.isArray(rows) || !rows.length) return;
+      const mapped = rows.map(function (p) {
+        return {
+          id: p.id, name: p.name, sub: p.sub, dose: p.dose, purity: p.purity,
+          price: p.price_cents, cap: p.cap || '#8b5cf6',
+          img: self.imageUrl(p.image_path) || ('assets/' + (p.image_path || '')),
+          stock: p.stock == null ? 0 : p.stock,
+        };
+      });
+      self.setState({ products: mapped });
+    }).catch(function () { /* keep fallback catalog */ });
+  }
+
+  // Single write path for the cart: persist to localStorage, then update state.
+  setCart(cart) { this.saveCart(cart); this.setState({ cart: cart }); }
+
+  addToCart(id, qty) {
+    const add = Math.max(1, qty || 1);
+    const s = this.state;
+    const p = this.byId(id);
+    if (!p) return;
+    const stock = this.stockOf(id);
+    if (stock <= 0) { this.showToast(p.name + ' ' + p.dose + ' is out of stock'); return; }
+    const current = this.qtyInCart(id);
+    const target = Math.min(stock, current + add);
+    if (target <= current) { this.showToast('Only ' + stock + ' of ' + p.name + ' ' + p.dose + ' available'); return; }
+    const ex = s.cart.find(function (c) { return c.id === id; });
+    const cart = ex
+      ? s.cart.map(function (c) { return c.id === id ? Object.assign({}, c, { qty: target }) : c; })
+      : s.cart.concat([{ id: id, qty: target }]);
+    this.setCart(cart);
+    this.showToast('Added ' + (target - current) + ' × ' + p.name + ' ' + p.dose + ' to cart');
+  }
+  setQty(id, v) {
+    const n = Math.max(1, parseInt(v, 10) || 1);
+    this.setState(function (s) { const q = Object.assign({}, s.qtySel); q[id] = n; return { qtySel: q }; });
+  }
+  setPayCheck(k, v) {
+    this.setState(function (s) { const p = Object.assign({}, s.payChecks); p[k] = !!v; return { payChecks: p }; });
+  }
+  showToast(msg) {
+    const self = this;
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(function () { self.setState({ toast: null }); }, 2200);
+  }
+  inc(id) { const stock = this.stockOf(id); this.setCart(this.state.cart.map(function (c) { return c.id === id ? Object.assign({}, c, { qty: Math.min(stock, c.qty + 1) }) : c; })); }
+  dec(id) { this.setCart(this.state.cart.map(function (c) { return c.id === id ? Object.assign({}, c, { qty: Math.max(1, c.qty - 1) }) : c; })); }
+  removeItem(id) { this.setCart(this.state.cart.filter(function (c) { return c.id !== id; })); }
+  openCart() { this.setState(function (s) { return { cartOpen: true, view: s.view === 'done' ? 'cart' : s.view }; }); }
+  closeCart() { this.setState({ cartOpen: false }); }
+  goCheckout() { if (this.state.cart.length) this.setState({ view: 'checkout' }); }
+  backToCart() { this.setState({ view: 'cart', submitError: null }); }
+
+  // ─── Checkout form ──────────────────────────────────────────────────────
+  setField(k, v) {
+    this.setState(function (s) { const f = Object.assign({}, s.form); f[k] = v; return { form: f, submitError: null }; });
+  }
+  setRuo(v) { this.setState({ ruoConfirmed: !!v, submitError: null }); }
+  setDisclaimer(v) { this.setState({ disclaimerConfirmed: !!v, submitError: null }); }
+
+  validate() {
+    const f = this.state.form;
+    const errors = {};
+    if (!f.fullName.trim()) errors.fullName = 'Required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) errors.email = 'Enter a valid email';
+    if (((f.phone.match(/\d/g) || []).length) < 10) errors.phone = 'Enter a valid phone number';
+    if (!f.address.trim()) errors.address = 'Required';
+    if (!f.city.trim()) errors.city = 'Required';
+    if (!f.state.trim()) errors.state = 'Required';
+    if (!/^\d{5}(-\d{4})?$/.test(f.zip.trim())) errors.zip = 'Enter a valid ZIP';
+    if (!this.state.ruoConfirmed) errors.ruo = 'Please confirm research use only';
+    if (!this.state.disclaimerConfirmed) errors.disclaimer = 'Please confirm you are 18+ and research use only';
+    return { errors: errors, valid: Object.keys(errors).length === 0 };
+  }
+
+  genOrderNo() {
+    const d = new Date();
+    const pad = function (n) { return String(n).padStart(2, '0'); };
+    const ymd = String(d.getFullYear()).slice(2) + pad(d.getMonth() + 1) + pad(d.getDate());
+    return 'VL-' + ymd + '-' + Math.floor(1000 + Math.random() * 9000);
+  }
+
+  buildOrder() {
+    const self = this;
+    const f = this.state.form;
+    const items = this.state.cart.map(function (c) {
+      const p = self.byId(c.id);
+      return { id: p.id, name: p.name, dose: p.dose, purity: p.purity, qty: c.qty, unit_price_cents: p.price, line_cents: p.price * c.qty };
+    });
+    const subtotal = items.reduce(function (n, it) { return n + it.line_cents; }, 0);
+    const shipping = this.SHIPPING_CENTS;
+    return {
+      order_number: this.genOrderNo(),
+      full_name: f.fullName.trim(), email: f.email.trim(), phone: f.phone.trim(),
+      address: f.address.trim(), city: f.city.trim(), state: f.state.trim(), zip: f.zip.trim(),
+      referral: f.referral.trim(),
+      items: items, subtotal_cents: subtotal, shipping_cents: shipping, total_cents: subtotal + shipping, status: 'new',
+    };
+  }
+
+  // Mirror every submitted order into localStorage as a safety net (the DB is
+  // write-only, so this is the only client-side record we keep).
+  mirrorLocally(order) {
+    try {
+      const raw = window.localStorage.getItem(this.ORDERS_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.push(Object.assign({ saved_at: new Date().toISOString() }, order));
+      window.localStorage.setItem(this.ORDERS_KEY, JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  placeOrder() {
+    const self = this;
+    if (this.state.submitting) return;
+    const v = this.validate();
+    if (!v.valid) { this.setState({ submitError: 'Please complete the highlighted fields.', attempted: true }); return; }
+    const order = this.buildOrder();
+    this.mirrorLocally(order);
+    this.setState({ submitting: true, submitError: null });
+    fetch(this.SUPABASE_URL + '/rest/v1/orders', {
+      method: 'POST',
+      headers: {
+        'apikey': this.SUPABASE_ANON,
+        'Authorization': 'Bearer ' + this.SUPABASE_ANON,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(order),
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? ' — ' + t : '')); });
+      self.saveCart([]);
+      self.setState({ submitting: false, view: 'done', orderNo: order.order_number, lastOrder: order, cart: [], form: Object.assign({}, self.emptyForm), payChecks: {} });
+    }).catch(function (e) {
+      self.setState({ submitting: false, submitError: 'Could not submit your order — please try again. (' + (e && e.message ? e.message : e) + ')' });
+    });
+  }
+
+  noteFor(order) {
+    if (!order) return '';
+    return 'Order Number: ' + order.order_number + '\n'
+      + 'Name: ' + order.full_name + '\n'
+      + 'Phone: ' + order.phone + '\n'
+      + 'Address: ' + order.address + ', ' + order.city + ' ' + order.state + ' ' + order.zip;
+  }
+  copyNote(text) {
+    const self = this;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { self.showToast('Message copied'); },
+          function () { self.showToast('Copy failed — select the text manually'); }
+        );
+        return;
+      }
+    } catch (e) {}
+    self.showToast('Copy not supported — select the text manually');
+  }
+  scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: 'smooth' });
+    this.setState({ cartOpen: false });
+  }
+
+  renderVals() {
+    const self = this;
+    const accent = this.props.accent || '#8b5cf6';
+    const spot = this.props.spot != null ? this.props.spot : 1;
+    const showReflections = this.props.showReflections != null ? this.props.showReflections : true;
+
+    const qtySel = this.state.qtySel || {};
+    const products = this.getProducts().map(function (p) {
+      const stock = p.stock == null ? self.MAX_QTY : p.stock;
+      const inCart = self.qtyInCart(p.id);
+      const remaining = Math.max(0, stock - inCart);          // how many more can still be added
+      const maxSel = Math.min(remaining, self.MAX_QTY);
+      const outOfStock = maxSel <= 0;
+      const chosen = Math.min(Math.max(1, qtySel[p.id] || 1), Math.max(1, maxSel));
+      const opts = [];
+      for (let n = 1; n <= maxSel; n++) opts.push(String(n));
+      return Object.assign({}, p, {
+        priceLabel: self.fmt(p.price),
+        stock: stock,
+        lowStock: stock > 0 && stock <= 5,
+        stockLabel: outOfStock ? 'Out of stock' : (stock <= 5 ? ('Only ' + stock + ' left') : ('In stock: ' + stock)),
+        outOfStock: outOfStock,
+        qtyOptions: opts,
+        selQty: String(chosen),
+        setQty: function (e) { self.setQty(p.id, e && e.target ? e.target.value : '1'); },
+        add: function () { self.addToCart(p.id, chosen); },
+        addLabel: outOfStock ? 'SOLD OUT' : 'ADD +',
+      });
+    });
+
+    const lines = this.state.cart.map(function (c) {
+      const p = self.byId(c.id) || { id: c.id, name: c.id, dose: '', purity: '', price: 0, img: '' };
+      return Object.assign({}, p, {
+        qty: c.qty,
+        lineLabel: self.fmt(p.price * c.qty),
+        inc: function () { self.inc(c.id); },
+        dec: function () { self.dec(c.id); },
+        remove: function () { self.removeItem(c.id); },
+      });
+    });
+    const count = this.state.cart.reduce(function (n, c) { return n + c.qty; }, 0);
+    const subtotal = this.state.cart.reduce(function (n, c) { const p = self.byId(c.id); return n + (p ? p.price : 0) * c.qty; }, 0);
+    const shipping = count > 0 ? this.SHIPPING_CENTS : 0;
+    const total = subtotal + shipping;
+
+    // Reta 10 mg upsell: two or more 10 mg vials cost more than a single 30 mg.
+    const reta10 = this.state.cart.find(function (c) { return c.id === 'reta10'; });
+    const retaUpsell = !!(reta10 && reta10.qty >= 2);
+
+    // Outside-US warning: we only ship within the US. Non-blocking heads-up based
+    // on the state field (there is no country field — US addresses only).
+    const stAbbr = (this.state.form.state || '').trim().toUpperCase();
+    const outsideUS = stAbbr.length > 0 && !this.US_STATES[stAbbr];
+
+    // Payment-screen confirmation checkboxes — all must be checked before closing.
+    const pc = this.state.payChecks || {};
+    const payAllConfirmed = !!(pc.step1 && pc.step2 && pc.step3);
+
+    // checkout form + validation
+    const form = this.state.form;
+    const val = this.validate();
+    const attempted = this.state.attempted;
+    const err = function (k) { return attempted ? (val.errors[k] || '') : ''; };
+    const mk = function (k) { return function (e) { self.setField(k, e && e.target ? e.target.value : ''); }; };
+
+    // confirmation
+    const lo = this.state.lastOrder;
+    const orderNote = this.noteFor(lo);
+
+    return {
+      accent: accent,
+      spot: spot,
+      showReflections: showReflections,
+      products: products,
+      lines: lines,
+      count: count,
+      countLabel: String(count),
+      hasItems: count > 0,
+      empty: this.state.cart.length === 0,
+      subtotalLabel: this.fmt(subtotal),
+      shippingLabel: this.fmt(shipping),
+      totalLabel: this.fmt(total),
+      retaUpsell: retaUpsell,
+      addReta30: function () { self.addToCart('reta30', 1); },
+      cartOpen: this.state.cartOpen,
+      isCart: this.state.view === 'cart',
+      isCheckout: this.state.view === 'checkout',
+      isDone: this.state.view === 'done',
+      orderNo: this.state.orderNo,
+      toast: this.state.toast,
+      openCart: function () { self.openCart(); },
+      closeCart: function () { self.closeCart(); },
+      goCheckout: function () { self.goCheckout(); },
+      backToCart: function () { self.backToCart(); },
+      placeOrder: function () { self.placeOrder(); },
+      goTop: function () { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+      goCatalog: function () { self.scrollTo('catalog'); },
+      goProcess: function () { self.scrollTo('process'); },
+      goTesting: function () { self.scrollTo('testing'); },
+      goReviews: function () { self.scrollTo('reviews'); },
+
+      // checkout form
+      form: form,
+      setFullName: mk('fullName'), setEmail: mk('email'), setPhone: mk('phone'),
+      setAddress: mk('address'), setCity: mk('city'), setState2: mk('state'), setZip: mk('zip'),
+      setReferral: mk('referral'),
+      errFullName: err('fullName'), errEmail: err('email'), errPhone: err('phone'),
+      errAddress: err('address'), errCity: err('city'), errState: err('state'),
+      errZip: err('zip'), errRuo: err('ruo'), errDisclaimer: err('disclaimer'),
+      outsideUS: outsideUS,
+      ruoConfirmed: this.state.ruoConfirmed,
+      setRuo: function (e) { self.setRuo(e && e.target ? e.target.checked : false); },
+      disclaimerConfirmed: this.state.disclaimerConfirmed,
+      setDisclaimer: function (e) { self.setDisclaimer(e && e.target ? e.target.checked : false); },
+      submitting: this.state.submitting,
+      submitError: this.state.submitError,
+      placeOrderLabel: this.state.submitting ? 'Submitting order…' : 'Place order',
+
+      // confirmation (orderNo is already exposed above)
+      orderAmountLabel: lo ? this.fmt(lo.total_cents) : '',
+      orderName: lo ? lo.full_name : '',
+      orderNote: orderNote,
+      copyNote: function () { self.copyNote(orderNote); },
+      venmoHandle: this.VENMO_HANDLE,
+      venmoLink: this.VENMO_LINK,
+
+      // payment-screen confirmation steps (must all be checked to finish)
+      pay1: !!pc.step1, pay2: !!pc.step2, pay3: !!pc.step3,
+      setPay1: function (e) { self.setPayCheck('step1', e && e.target ? e.target.checked : false); },
+      setPay2: function (e) { self.setPayCheck('step2', e && e.target ? e.target.checked : false); },
+      setPay3: function (e) { self.setPayCheck('step3', e && e.target ? e.target.checked : false); },
+      payAllConfirmed: payAllConfirmed,
+      payNotConfirmed: !payAllConfirmed,
+      payDoneOpacity: payAllConfirmed ? '1' : '0.5',
+
+      // theme
+      theme: this.state.theme,
+      isLight: this.state.theme === 'light',
+      themeLabel: this.state.theme === 'light' ? 'DARK' : 'LIGHT',
+      toggleTheme: function () { self.toggleTheme(); },
+
+      // referral gate
+      locked: !this.state.unlocked,
+      gatePassword: this.state.gatePassword,
+      gateRemember: this.state.gateRemember,
+      gateDisclaimer: this.state.gateDisclaimer,
+      gateError: this.state.gateError,
+      setGatePassword: function (e) { self.setGatePassword(e && e.target ? e.target.value : ''); },
+      setGateRemember: function (e) { self.setGateRemember(e && e.target ? e.target.checked : false); },
+      setGateDisclaimer: function (e) { self.setGateDisclaimer(e && e.target ? e.target.checked : false); },
+      submitGate: function () { self.submitGate(); },
+      gateKey: function (e) { if (e && e.key === 'Enter') self.submitGate(); },
+    };
+  }
+}
+</script>
+</body>
+</html>

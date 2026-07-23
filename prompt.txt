@@ -1,0 +1,38 @@
+Update the supabase schema. I have what we did originally already updated, but I want to add a product table with stock and it should have links to the product images (which use supabase storage), it should keep track of stock. 
+Also create SQL file for functions to update product stock based on new orders placed.
+Add a drop down to each item within the catalog and the max allowed to order is based on the current stock in the DB.
+
+I want the catalog to load dynamically with the amount of items in the product table. So the product table should have all item information.
+
+
+Checkout Page Flow:
+Allow all US addresses in the checkout flow.
+Show a warning if they are outside of US.
+"No payment is collected here. After placing your order you'll receive an order number and Venmo details — your order is prepared once payment is received."
+Add: orders may be rejected. In the off chance that happens a full refund will be given. (No venmo fees will be reimbursed).
+
+Cart Page Flow:
+Add a warning to users adding multiple of the Reta 10mg to let them know they can get more for less by buying the 30mg for 200.
+Add product pictures to the items within the cart on the left side of the details
+Under shipping, add a referal input that is stored with the order details. It will just be the full name of the person who order.
+Add a flat shipping rate of $15.00
+Add a "Taxes Included" within the sub-total
+
+Payment Page Flow:
+Have a checkbox for each step so they can't close until confirmed every step
+
+Hero Section:
+Anything "Rounded" needs to be made sharper to match logo and brand stlying.
+Remove "MADE &
+TESTED
+IN THE USA
+RESEARCH USE ONLY" circle section
+
+Full Website:
+Add a light theme
+Remove "RUO" from the navbar
+
+Catalog Cards:
+Remove the hover effect on the vials within the hero and the catalog items
+
+Make the vial glow on the catalog items be centered with the image.
