@@ -43,6 +43,9 @@
   img { display: block; }
   a { color: var(--link); text-decoration: none; }
   a:hover { color: var(--link-hover); }
+  /* Brand wordmark is white line-art on transparent — invert it on the light theme so it stays legible. */
+  .vl-logo { display: block; height: auto; }
+  :root[data-theme="light"] .vl-logo { filter: invert(1); }
   ::selection { background: color-mix(in oklab, #8b5cf6 55%, transparent); color: #fff; }
   input::placeholder { color: var(--text-9); }
   @keyframes vl-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -103,11 +106,8 @@
   <!-- NAV -->
   <header style="position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); background: var(--nav-bg); border-bottom: 1px solid var(--line-1);">
     <nav style="max-width: 1300px; margin: 0 auto; padding: 0 40px; height: 66px; display: flex; align-items: center; justify-content: space-between;">
-      <div onClick="{{ goTop }}" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-        <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;">
-          <div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div>
-        </div>
-        <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
+      <div onClick="{{ goTop }}" style="display: flex; align-items: center; cursor: pointer;">
+        <img src="assets/long_logo.png" alt="Vitalis Labs" class="vl-logo" style="height: 26px; width: auto;">
       </div>
       <div style="display: flex; align-items: center; gap: 34px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--text-5);">
         <span onClick="{{ goCatalog }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">CATALOG</span>
@@ -125,6 +125,9 @@
       </div>
     </nav>
   </header>
+
+  <!-- HOME (hero → reviews). Support pages replace this block via {{ page }}. -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
 
   <!-- HERO -->
   <section style="position: relative; min-height: calc(100vh - 66px); overflow: hidden; display: flex; flex-direction: column;">
@@ -342,31 +345,151 @@
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
         <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
           <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
-          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Purity matched the COA on our own re-test. First vendor we haven't had to second-guess."</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Delivered the same day I ordered. Everything arrived as expected and the process was smooth."</p>
           <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">PRINCIPAL INVESTIGATOR / INDEPENDENT LAB</div>
         </div>
         <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
           <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
-          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Consistent lyophilization batch to batch, and the documentation is immaculate every time."</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Support was responsive the whole time. They answered my questions quickly and kept me updated."</p>
           <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">RESEARCH ASSOCIATE / UNIVERSITY GROUP</div>
         </div>
         <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
           <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
-          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Cold-chain arrived intact and reconstitution was clean. Exactly what the work demands."</p>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"My order arrived earlier than expected and everything was correct. No issues at all."</p>
           <div style="margin-top: auto; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--text-8);">LAB MANAGER / BIOTECH STARTUP</div>
         </div>
       </div>
     </div>
   </section>
 
+  </sc-if>
+  <!-- /HOME -->
+
+  <!-- ══════════ SUPPORT PAGE: SHIPPING ══════════ -->
+  <sc-if value="{{ isShipping }}" hint-placeholder-val="{{ false }}">
+  <section style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+    <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — SHIPPING</div>
+    <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Shipping &amp; delivery</h1>
+    <p style="margin: 0 0 52px; font-size: 16px; line-height: 1.7; color: var(--text-4); max-width: 62ch;">Every order ships cold-chain from the United States. Here's how orders are prepared, packed, and delivered once your payment is received.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
+      <div style="background: var(--bg-2); padding: 30px 28px; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">PROCESSING</span>
+        <h3 style="margin: 0; font-size: 17px; font-weight: 500;">Dispatched within 48 hours</h3>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-6);">Orders are prepared once the matching Venmo payment is received, then dispatched within 48 hours. You'll get your order number at checkout for reference.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 30px 28px; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">PACKAGING</span>
+        <h3 style="margin: 0; font-size: 17px; font-weight: 500;">Temperature-controlled</h3>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-6);">Lyophilized vials are sealed and shipped in insulated, temperature-controlled packaging to protect stability in transit, straight to your bench.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 30px 28px; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">RATE</span>
+        <h3 style="margin: 0; font-size: 17px; font-weight: 500;">Flat $15.00 cold-chain</h3>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-6);">A single flat cold-chain shipping rate of $15.00 is added to every order at checkout — no per-item or weight-based surcharges. Taxes are included.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 30px 28px; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">DELIVERY AREA</span>
+        <h3 style="margin: 0; font-size: 17px; font-weight: 500;">United States only</h3>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-6);">We currently ship to US addresses only. Checkout will flag an address that doesn't look like a US state so it can be corrected before you order.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 22px; display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-sm);">
+      <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 78%, white); font-size: 13px; margin-top: 1px;">◆</span>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-4);">Orders may occasionally be rejected. In the off chance that happens, a full refund is given (Venmo fees are not reimbursed). Questions about an order in transit? <span onClick="{{ goContact }}" style="cursor: pointer; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border-bottom: 1px solid currentColor;">Contact us</span>.</p>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- ══════════ SUPPORT PAGE: CONTACT ══════════ -->
+  <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+  <section style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+    <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — CONTACT</div>
+    <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Get in touch</h1>
+    <p style="margin: 0 0 52px; font-size: 16px; line-height: 1.7; color: var(--text-4); max-width: 62ch;">Reach out about an order, product availability, or a certificate of analysis. Include your order number where you have one so we can find it quickly.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+      <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 12px;">EMAIL</div>
+        <a href="mailto:support@vitalislabs.com" style="font-size: 18px; font-weight: 500; color: var(--text); word-break: break-all;" style-hover="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white);">support@vitalislabs.com</a>
+        <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-6);">The fastest way to reach us. We reply within 1–2 business days.</p>
+      </div>
+      <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 12px;">PAYMENTS · VENMO</div>
+        <div style="font-size: 18px; font-weight: 500; color: var(--text);">{{ venmoHandle }}</div>
+        <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-6);">Order payments are sent here after checkout. Always include your order note so we can match your payment.</p>
+      </div>
+      <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 12px;">SUPPORT HOURS</div>
+        <div style="font-size: 18px; font-weight: 500; color: var(--text);">Mon – Fri · 9am – 5pm ET</div>
+        <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-6);">Messages sent outside these hours are answered the next business day.</p>
+      </div>
+      <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px;">
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 12px;">SHIPPING &amp; RETURNS</div>
+        <div style="font-size: 18px; font-weight: 500; color: var(--text);">United States only</div>
+        <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-6);">See <span onClick="{{ goShipping }}" style="cursor: pointer; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border-bottom: 1px solid currentColor;">Shipping</span> for dispatch times, rates, and delivery area.</p>
+      </div>
+    </div>
+
+    <p style="margin: 28px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--text-8); max-width: 70ch;">All products are supplied for laboratory research use only — not for human or veterinary consumption. We can't provide medical, dosing, or usage guidance.</p>
+  </section>
+  </sc-if>
+
+  <!-- ══════════ SUPPORT PAGE: FAQ ══════════ -->
+  <sc-if value="{{ isFAQ }}" hint-placeholder-val="{{ false }}">
+  <section style="max-width: 860px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+    <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — FAQ</div>
+    <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Frequently asked questions</h1>
+    <p style="margin: 0 0 52px; font-size: 16px; line-height: 1.7; color: var(--text-4); max-width: 62ch;">The essentials on our products, testing, ordering, and delivery. Still need a hand? <span onClick="{{ goContact }}" style="cursor: pointer; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border-bottom: 1px solid currentColor;">Contact us</span>.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Are these products for human use?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">No. All products are chemical reagents supplied exclusively for laboratory research and development. They are not for human or veterinary consumption and are not intended to diagnose, treat, cure, or prevent any disease.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Do you provide a certificate of analysis?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">Yes — every batch ships with a certificate of analysis. Each production lot is sent to an accredited third-party lab and released only against HPLC purity (≥ 99%) and mass-spectrometry identity confirmation.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Where are your peptides made?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">Every peptide is synthesized and lyophilized in United States facilities under controlled conditions, then independently verified for purity and identity before release.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">How do I pay for my order?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">No payment is collected on the site. After placing your order you'll receive an order number and Venmo details. Send the amount shown to {{ venmoHandle }} and paste the provided order note so we can match your payment — your order is prepared once payment is received.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">How much is shipping and how fast is it?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">A flat cold-chain rate of $15.00 is added to every order, with taxes included. Orders are dispatched within 48 hours of payment in temperature-controlled packaging. See <span onClick="{{ goShipping }}" style="cursor: pointer; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); border-bottom: 1px solid currentColor;">Shipping</span> for details.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Do you ship internationally?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">Not at this time — we ship to US addresses only. Checkout will warn you if an address doesn't look like a US state.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Can an order be rejected or refunded?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">Occasionally, yes. In the off chance an order can't be filled, a full refund is given (Venmo fees are not reimbursed).</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 26px 28px;">
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Why do I need a referral password?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">The catalog is available to referred researchers. Enter the password you were given to browse and order. If you don't have one, check with the person who referred you.</p>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
   <!-- FOOTER -->
   <footer style="border-top: 1px solid var(--line-1);">
     <div style="max-width: 1300px; margin: 0 auto; padding: 80px 40px 40px;">
       <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 56px; border-bottom: 1px solid var(--line-1);">
         <div>
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
-            <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div></div>
-            <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
+          <div style="display: flex; align-items: center; margin-bottom: 18px;">
+            <img src="assets/long_logo.png" alt="Vitalis Labs" class="vl-logo" style="height: 28px; width: auto;">
           </div>
           <p style="margin: 0; max-width: 34ch; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Research-grade peptides, synthesized and independently verified in the United States.</p>
         </div>
@@ -380,7 +503,7 @@
         </div>
         <div>
           <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">SUPPORT</div>
-          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span style="cursor: pointer;" style-hover="color: var(--text);">Shipping</span><span style="cursor: pointer;" style-hover="color: var(--text);">Contact</span><span style="cursor: pointer;" style-hover="color: var(--text);">FAQ</span></div>
+          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span onClick="{{ goShipping }}" style="cursor: pointer;" style-hover="color: var(--text);">Shipping</span><span onClick="{{ goContact }}" style="cursor: pointer;" style-hover="color: var(--text);">Contact</span><span onClick="{{ goFAQ }}" style="cursor: pointer;" style-hover="color: var(--text);">FAQ</span></div>
         </div>
       </div>
       <p style="margin: 28px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--text-9); max-width: 88ch;">All products sold by Vitalis Labs are chemical reagents intended exclusively for laboratory research and development use only. Products are not for human or veterinary consumption and are not intended for diagnostic or therapeutic use. The statements made on this website have not been evaluated by the US Food and Drug Administration. The products offered are not intended to diagnose, treat, cure, or prevent any disease. All product names, specifications, and figures shown are illustrative for this design.</p>
@@ -669,6 +792,7 @@ class Component extends DCLogic {
     qtySel: {},              // per-product quantity chosen in the catalog dropdown
     payChecks: {},           // confirmation checkboxes on the payment screen
     theme: 'dark',           // dark is the only theme surfaced in the UI
+    page: 'home',            // 'home' | 'shipping' | 'contact' | 'faq' — client-side support pages
   };
 
   componentDidMount() {
@@ -922,9 +1046,27 @@ class Component extends DCLogic {
     self.showToast('Copy not supported — select the text manually');
   }
   scrollTo(id) {
-    const el = document.getElementById(id);
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: 'smooth' });
-    this.setState({ cartOpen: false });
+    const doScroll = function () {
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: 'smooth' });
+    };
+    // Section anchors only exist on the home view — return home first if we're on a support page.
+    if (this.state.page !== 'home') {
+      this.setState({ page: 'home', cartOpen: false });
+      setTimeout(doScroll, 60);
+    } else {
+      doScroll();
+      this.setState({ cartOpen: false });
+    }
+  }
+  // ─── Support pages (client-side views) ──────────────────────────────────
+  goPage(p) {
+    this.setState({ page: p, cartOpen: false });
+    try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) {}
+  }
+  goHome() {
+    this.setState({ page: 'home', cartOpen: false });
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
   }
 
   renderVals() {
@@ -1022,11 +1164,20 @@ class Component extends DCLogic {
       goCheckout: function () { self.goCheckout(); },
       backToCart: function () { self.backToCart(); },
       placeOrder: function () { self.placeOrder(); },
-      goTop: function () { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+      goTop: function () { self.goHome(); },
       goCatalog: function () { self.scrollTo('catalog'); },
       goProcess: function () { self.scrollTo('process'); },
       goTesting: function () { self.scrollTo('testing'); },
       goReviews: function () { self.scrollTo('reviews'); },
+
+      // support pages
+      isHome: this.state.page === 'home',
+      isShipping: this.state.page === 'shipping',
+      isContact: this.state.page === 'contact',
+      isFAQ: this.state.page === 'faq',
+      goShipping: function () { self.goPage('shipping'); },
+      goContact: function () { self.goPage('contact'); },
+      goFAQ: function () { self.goPage('faq'); },
 
       // checkout form
       form: form,
