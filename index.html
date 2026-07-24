@@ -124,13 +124,13 @@
         <sc-if value="{{ gateError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 9px;">{{ gateError }}</div></sc-if>
         <label style="display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 12.5px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
           <input type="checkbox" checked="{{ gateDisclaimer }}" onChange="{{ setGateDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
-          I am at least 18 years of age or older, and I understand these products are not for human consumption and are for research purposes only.
+          I am at least 21 years of age or older, and I understand these products are not for human consumption and are for research purposes only.
         </label>
         <label style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; color: var(--text-4); cursor: pointer;">
           <input type="checkbox" checked="{{ gateRemember }}" onChange="{{ setGateRemember }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
           Remember me on this device
         </label>
-        <button onClick="{{ submitGate }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">Enter</button>
+        <button onClick="{{ submitGate }}" disabled="{{ gateChecking }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ gateSubmitLabel }}</button>
         <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 18px; text-align: center;">RESEARCH USE ONLY</div>
       </div>
     </div>
@@ -674,7 +674,7 @@
               </sc-if>
 
               <div>
-                <input value="{{ form.referral }}" onChange="{{ setReferral }}" placeholder="Referral — full name of who referred you (optional)" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <input value="{{ form.referral }}" onChange="{{ setReferral }}" placeholder="Referral — full name of who referred you" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
               </div>
 
               <div style="display: flex; gap: 11px; align-items: flex-start; margin-top: 8px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line-1); border-radius: var(--r-sm);">
@@ -690,7 +690,7 @@
 
               <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; font-size: 12px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
                 <input type="checkbox" checked="{{ disclaimerConfirmed }}" onChange="{{ setDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
-                I am at least 18 years of age or older, and these products are not for human consumption and are for research purposes only.
+                I am at least 21 years of age or older, and these products are not for human consumption and are for research purposes only.
               </label>
               <sc-if value="{{ errDisclaimer }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px;">{{ errDisclaimer }}</div></sc-if>
             </div>
@@ -813,9 +813,9 @@ class Component extends DCLogic {
   VENMO_LINK = 'https://venmo.com/code?user_id=4645604667950183480&created=1784567282.74056&printed=1';
   CART_KEY = 'vitalis_cart';
   ORDERS_KEY = 'vitalis_orders';
-  // Referral gate. NOTE: this is a client-side "soft gate" — the password lives in
-  // the page source, so it deters casual/unreferred visitors but is not real security.
-  REFERRAL_PASSWORD = 'V1T4L1S';
+  // Referral gate. The password is NOT in this file — it's stored as a bcrypt
+  // hash in Supabase and checked server-side via the verify_referral_password
+  // RPC (see supabase-referral-gate.sql). The browser only ever learns true/false.
   UNLOCK_KEY = 'vitalis_unlocked';
   // ────────────────────────────────────────────────────────────────────────
 
@@ -827,6 +827,7 @@ class Component extends DCLogic {
     gateRemember: true,
     gateDisclaimer: false,
     gateError: null,
+    gateChecking: false,
     cart: this.loadCart(),
     cartOpen: false,
     view: 'cart',
@@ -887,15 +888,34 @@ class Component extends DCLogic {
   setGateDisclaimer(v) { this.setState({ gateDisclaimer: !!v, gateError: null }); }
   submitGate() {
     if (!this.state.gateDisclaimer) {
-      this.setState({ gateError: 'Please confirm you are 18+ and agree these are for research use only.' });
+      this.setState({ gateError: 'Please confirm you are 21+ and agree these are for research use only.' });
       return;
     }
-    if (this.state.gatePassword === this.REFERRAL_PASSWORD) {
-      if (this.state.gateRemember) { try { window.localStorage.setItem(this.UNLOCK_KEY, '1'); } catch (e) {} }
-      this.setState({ unlocked: true, gateError: null, gatePassword: '' });
-    } else {
-      this.setState({ gateError: 'Incorrect password. Please check with your referrer.' });
-    }
+    if (this.state.gateChecking) return;
+    const self = this;
+    const candidate = this.state.gatePassword;
+    this.setState({ gateChecking: true, gateError: null });
+    fetch(this.SUPABASE_URL + '/rest/v1/rpc/verify_referral_password', {
+      method: 'POST',
+      headers: {
+        'apikey': this.SUPABASE_ANON,
+        'Authorization': 'Bearer ' + this.SUPABASE_ANON,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ candidate: candidate }),
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? ' — ' + t : '')); });
+      return r.json();
+    }).then(function (ok) {
+      if (ok === true) {
+        if (self.state.gateRemember) { try { window.localStorage.setItem(self.UNLOCK_KEY, '1'); } catch (e) {} }
+        self.setState({ unlocked: true, gateError: null, gatePassword: '', gateChecking: false });
+      } else {
+        self.setState({ gateError: 'Incorrect password. Please check with your referrer.', gateChecking: false });
+      }
+    }).catch(function (e) {
+      self.setState({ gateChecking: false, gateError: 'Could not verify right now — please try again.' });
+    });
   }
 
   // Flat cold-chain shipping added to every order.
@@ -1010,7 +1030,7 @@ class Component extends DCLogic {
     if (!f.state.trim()) errors.state = 'Required';
     if (!/^\d{5}(-\d{4})?$/.test(f.zip.trim())) errors.zip = 'Enter a valid ZIP';
     if (!this.state.ruoConfirmed) errors.ruo = 'Please confirm research use only';
-    if (!this.state.disclaimerConfirmed) errors.disclaimer = 'Please confirm you are 18+ and research use only';
+    if (!this.state.disclaimerConfirmed) errors.disclaimer = 'Please confirm you are 21+ and research use only';
     return { errors: errors, valid: Object.keys(errors).length === 0 };
   }
 
@@ -1276,6 +1296,8 @@ class Component extends DCLogic {
       gateRemember: this.state.gateRemember,
       gateDisclaimer: this.state.gateDisclaimer,
       gateError: this.state.gateError,
+      gateChecking: this.state.gateChecking,
+      gateSubmitLabel: this.state.gateChecking ? 'Checking…' : 'Enter',
       setGatePassword: function (e) { self.setGatePassword(e && e.target ? e.target.value : ''); },
       setGateRemember: function (e) { self.setGateRemember(e && e.target ? e.target.checked : false); },
       setGateDisclaimer: function (e) { self.setGateDisclaimer(e && e.target ? e.target.checked : false); },
