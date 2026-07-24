@@ -109,28 +109,50 @@
 </helmet>
 <div style="--accent: {{ accent }}; --spot: {{ spot }}; position: relative; min-height: 100vh; overflow-x: hidden; background: var(--bg);">
 
-  <!-- REFERRAL GATE -->
+  <!-- ENTRY AUTH GATE (Log in / Sign up) -->
   <sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
-    <div style="position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease;">
-      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6);">
+    <div style="position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease; overflow-y: auto;">
+      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6); margin: auto;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
           <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div></div>
           <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
         </div>
-        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 10px;">REFERRAL ACCESS</div>
-        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Enter referral password</h2>
-        <p style="margin: 0 0 22px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">This catalog is available to referred researchers. Enter the password you were given to continue.</p>
-        <input value="{{ gatePassword }}" onChange="{{ setGatePassword }}" onKeyDown="{{ gateKey }}" type="password" placeholder="Referral password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
-        <sc-if value="{{ gateError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 9px;">{{ gateError }}</div></sc-if>
+
+        <!-- Log in / Sign up toggle -->
+        <div style="display: flex; gap: 6px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px; margin-bottom: 22px;">
+          <span onClick="{{ switchToLogin }}" style="flex: 1; text-align: center; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; padding: 9px 0; border-radius: var(--r-xs); color: {{ loginTabColor }}; background: {{ loginTabBg }};">LOG IN</span>
+          <span onClick="{{ switchToSignup }}" style="flex: 1; text-align: center; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; padding: 9px 0; border-radius: var(--r-xs); color: {{ signupTabColor }}; background: {{ signupTabBg }};">SIGN UP</span>
+        </div>
+
+        <sc-if value="{{ authIsSignup }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Create your account</h2>
+          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Accounts are invite-only. Enter the referral password you were given, then create your login.</p>
+        </sc-if>
+        <sc-if value="{{ authIsLogin }}" hint-placeholder-val="{{ true }}">
+          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Welcome back</h2>
+          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Log in to browse the catalog and place an order.</p>
+        </sc-if>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <input value="{{ authEmail }}" onChange="{{ setAuthEmail }}" onKeyDown="{{ authKey }}" type="email" placeholder="Email address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+          <input value="{{ authPassword }}" onChange="{{ setAuthPassword }}" onKeyDown="{{ authKey }}" type="password" placeholder="Password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+          <sc-if value="{{ authIsSignup }}" hint-placeholder-val="{{ false }}">
+            <input value="{{ gatePassword }}" onChange="{{ setGatePassword }}" onKeyDown="{{ authKey }}" type="password" placeholder="Referral password (invite)" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 10px;">{{ authError }}</div></sc-if>
+        <sc-if value="{{ authNotice }}" hint-placeholder-val="{{ false }}"><div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); font-size: 12px; margin-top: 10px; line-height: 1.5;">{{ authNotice }}</div></sc-if>
+
         <label style="display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 12.5px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
           <input type="checkbox" checked="{{ gateDisclaimer }}" onChange="{{ setGateDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
           I am at least 21 years of age or older, and I understand these products are not for human consumption and are for research purposes only.
         </label>
         <label style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; color: var(--text-4); cursor: pointer;">
-          <input type="checkbox" checked="{{ gateRemember }}" onChange="{{ setGateRemember }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
+          <input type="checkbox" checked="{{ rememberMe }}" onChange="{{ setRememberMe }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
           Remember me on this device
         </label>
-        <button onClick="{{ submitGate }}" disabled="{{ gateChecking }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ gateSubmitLabel }}</button>
+        <button onClick="{{ submitAuth }}" disabled="{{ authBusy }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ authSubmitLabel }}</button>
         <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 18px; text-align: center;">RESEARCH USE ONLY</div>
       </div>
     </div>
@@ -165,8 +187,15 @@
         <span onClick="{{ goProcess }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">PROCESS</span>
         <span onClick="{{ goTesting }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">TESTING</span>
         <span onClick="{{ goReviews }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">REVIEWS</span>
+        <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
+          <span onClick="{{ goOrders }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">MY ORDERS</span>
+          <span onClick="{{ goAccount }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">PROFILE</span>
+        </sc-if>
       </div>
       <div style="display: flex; align-items: center; gap: 16px;">
+        <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
+          <span onClick="{{ logout }}" title="{{ userEmail }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">LOG OUT</span>
+        </sc-if>
         <div onClick="{{ openCart }}" style="display: flex; align-items: center; gap: 9px; cursor: pointer; border: 1px solid var(--line-3); padding: 8px 15px; border-radius: var(--r-pill); transition: border-color .2s, background .2s;" style-hover="border-color: var(--line-5); background: var(--hover-bg);">
           <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em;">CART</span>
           <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
@@ -534,6 +563,86 @@
   </section>
   </sc-if>
 
+  <!-- ══════════ MY ORDERS (dashboard) ══════════ -->
+  <sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+  <section class="vl-sec" style="max-width: 900px; margin: 0 auto; padding: 96px 40px 110px; min-height: 60vh;">
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">ACCOUNT — ORDER HISTORY</div>
+    <h1 style="margin: 0 0 8px; font-weight: 300; font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.02em;">My orders</h1>
+    <p style="margin: 0 0 40px; font-size: 15px; line-height: 1.7; color: var(--text-5); max-width: 60ch;">Every order placed on this account, with its current status. Signed in as <span style="color: var(--text-3);">{{ userEmail }}</span>.</p>
+
+    <sc-if value="{{ ordersEmpty }}" hint-placeholder-val="{{ true }}">
+      <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-3); padding: 44px 30px; text-align: center;">
+        <div style="font-size: 15px; color: var(--text-4); margin-bottom: 18px;">You haven't placed any orders yet.</div>
+        <button onClick="{{ goCatalog }}" style="font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 12px 22px; border-radius: var(--r-pill); cursor: pointer;">Browse the catalog</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasOrders }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <sc-for list="{{ myOrders }}" as="order" hint-placeholder-count="2">
+          <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-3); padding: 22px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+              <div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 14px; letter-spacing: 0.08em; color: var(--text-2);">{{ order.order_number }}</div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--text-7); margin-top: 5px;">{{ order.dateLabel }}</div>
+              </div>
+              <div style="text-align: right;">
+                <span style="display: inline-block; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #0b0b0f; background: {{ order.statusColor }}; padding: 5px 11px; border-radius: var(--r-pill);">{{ order.statusLabel }}</span>
+                <div style="font-size: 17px; font-weight: 600; margin-top: 8px;">{{ order.totalLabel }}</div>
+              </div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-1); font-size: 13px; line-height: 1.6; color: var(--text-5);">{{ order.itemText }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </section>
+  </sc-if>
+
+  <!-- ══════════ PROFILE ══════════ -->
+  <sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+  <section class="vl-sec" style="max-width: 640px; margin: 0 auto; padding: 96px 40px 110px; min-height: 60vh;">
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">ACCOUNT — PROFILE</div>
+    <h1 style="margin: 0 0 8px; font-weight: 300; font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.02em;">Your profile</h1>
+    <p style="margin: 0 0 36px; font-size: 15px; line-height: 1.7; color: var(--text-5); max-width: 60ch;">Save your contact and shipping details so checkout is one step faster. Only you can see this.</p>
+
+    <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px 26px; display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">EMAIL</div>
+        <input value="{{ pfEmail }}" readonly style="width: 100%; background: var(--bg-2); border: 1px solid var(--line-1); color: var(--text-5); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;">
+      </div>
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">FULL NAME / INSTITUTION</div>
+        <input value="{{ pfFullName }}" onChange="{{ setPfFullName }}" placeholder="Full name / Institution" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+      </div>
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">PHONE</div>
+        <input value="{{ pfPhone }}" onChange="{{ setPfPhone }}" type="tel" placeholder="Phone number" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+      </div>
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">STREET ADDRESS</div>
+        <input value="{{ pfAddress }}" onChange="{{ setPfAddress }}" placeholder="Street address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">CITY</div>
+          <input value="{{ pfCity }}" onChange="{{ setPfCity }}" placeholder="City" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        </div>
+        <div style="width: 84px;">
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">STATE</div>
+          <input value="{{ pfState }}" onChange="{{ setPfState }}" placeholder="ST" maxlength="2" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none; text-transform: uppercase;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        </div>
+        <div style="width: 110px;">
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 7px;">ZIP</div>
+          <input value="{{ pfZip }}" onChange="{{ setPfZip }}" placeholder="ZIP" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        </div>
+      </div>
+      <sc-if value="{{ profileMsg }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12.5px; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); margin-top: 2px;">{{ profileMsg }}</div></sc-if>
+      <button onClick="{{ saveProfile }}" disabled="{{ profileSaving }}" style="width: 100%; margin-top: 6px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer;">{{ profileSaveLabel }}</button>
+    </div>
+  </section>
+  </sc-if>
+
   <!-- FOOTER -->
   <footer style="border-top: 1px solid var(--line-1);">
     <div class="vl-pad" style="max-width: 1300px; margin: 0 auto; padding: 80px 40px 40px;">
@@ -556,6 +665,12 @@
           <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">SUPPORT</div>
           <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span onClick="{{ goShipping }}" style="cursor: pointer;" style-hover="color: var(--text);">Shipping</span><span onClick="{{ goContact }}" style="cursor: pointer;" style-hover="color: var(--text);">Contact</span><span onClick="{{ goFAQ }}" style="cursor: pointer;" style-hover="color: var(--text);">FAQ</span></div>
         </div>
+        <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 18px;">ACCOUNT</div>
+          <div style="display: flex; flex-direction: column; gap: 11px; font-size: 13.5px; color: var(--text-4);"><span onClick="{{ goOrders }}" style="cursor: pointer;" style-hover="color: var(--text);">My orders</span><span onClick="{{ goAccount }}" style="cursor: pointer;" style-hover="color: var(--text);">Profile</span><span onClick="{{ logout }}" style="cursor: pointer;" style-hover="color: var(--text);">Log out</span></div>
+        </div>
+        </sc-if>
       </div>
       <p style="margin: 28px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--text-9); max-width: 88ch;">All products sold by Vitalis Labs are chemical reagents intended exclusively for laboratory research and development use only. Products are not for human or veterinary consumption and are not intended for diagnostic or therapeutic use. The statements made on this website have not been evaluated by the US Food and Drug Administration. The products offered are not intended to diagnose, treat, cure, or prevent any disease. All product names, specifications, and figures shown are illustrative for this design.</p>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 12px;">
@@ -675,6 +790,7 @@
 
               <div>
                 <input value="{{ form.referral }}" onChange="{{ setReferral }}" placeholder="Referral — full name of who referred you" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 12px 13px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+                <sc-if value="{{ errReferral }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 11px; margin-top: 5px;">{{ errReferral }}</div></sc-if>
               </div>
 
               <div style="display: flex; gap: 11px; align-items: flex-start; margin-top: 8px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line-1); border-radius: var(--r-sm);">
@@ -755,7 +871,7 @@
               <sc-if value="{{ payNotConfirmed }}" hint-placeholder-val="{{ true }}">
                 <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); text-align: center;">CHECK ALL THREE STEPS TO FINISH</div>
               </sc-if>
-              <button onClick="{{ closeCart }}" disabled="{{ payNotConfirmed }}" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 12px 24px; border-radius: var(--r-pill); cursor: pointer; opacity: {{ payDoneOpacity }};">DONE</button>
+              <button onClick="{{ finishOrder }}" disabled="{{ payNotConfirmed }}" style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 12px 24px; border-radius: var(--r-pill); cursor: pointer; opacity: {{ payDoneOpacity }};">DONE</button>
             </div>
           </sc-if>
         </div>
@@ -788,6 +904,21 @@
     </div>
   </sc-if>
 
+  <!-- CHECKOUT REFERRAL GATE (required before every order) -->
+  <sc-if value="{{ orderGateOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease;">
+      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 32px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6);">
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 10px;">CONFIRM ORDER</div>
+        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 23px; letter-spacing: -0.01em;">Enter referral password</h2>
+        <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">For security, your referral password is required to place each order.</p>
+        <input value="{{ orderGatePassword }}" onChange="{{ setOrderGatePassword }}" onKeyDown="{{ orderGateKey }}" type="password" placeholder="Referral password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        <sc-if value="{{ orderGateError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 9px;">{{ orderGateError }}</div></sc-if>
+        <button onClick="{{ confirmOrderGate }}" disabled="{{ orderGateBusy }}" style="width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer;">{{ orderGateLabel }}</button>
+        <button onClick="{{ closeOrderGate }}" style="width: 100%; margin-top: 8px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text-6); background: transparent; border: none; padding: 8px; cursor: pointer;">CANCEL</button>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- TOAST -->
   <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
     <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 95; background: var(--toast-bg); border: 1px solid rgba(255,255,255,0.14); color: #f3f2f6; font-size: 13px; padding: 13px 22px; border-radius: var(--r-pill); box-shadow: 0 18px 50px rgba(0,0,0,0.5); animation: vl-toast .3s ease; display: flex; align-items: center; gap: 10px;">
@@ -813,21 +944,45 @@ class Component extends DCLogic {
   VENMO_LINK = 'https://venmo.com/code?user_id=4645604667950183480&created=1784567282.74056&printed=1';
   CART_KEY = 'vitalis_cart';
   ORDERS_KEY = 'vitalis_orders';
-  // Referral gate. The password is NOT in this file — it's stored as a bcrypt
-  // hash in Supabase and checked server-side via the verify_referral_password
-  // RPC (see supabase-referral-gate.sql). The browser only ever learns true/false.
-  UNLOCK_KEY = 'vitalis_unlocked';
+  // Auth. Customers sign in with Supabase Auth (GoTrue). The session (JWT +
+  // refresh token) is mirrored to localStorage under SESSION_KEY; REMEMBER_KEY
+  // records the "remember me" choice. On entry we only auto-restore a session
+  // when remember me is on — otherwise the user logs in again.
+  SESSION_KEY = 'vitalis_session';
+  REMEMBER_KEY = 'vitalis_remember';
+  // Referral password. NOT in this file — stored as a bcrypt hash in Supabase and
+  // checked server-side via verify_referral_password (see supabase-referral-gate.sql).
+  // It now gates account signup (the invite) and is required again on every checkout.
   // ────────────────────────────────────────────────────────────────────────
 
   emptyForm = { fullName: '', email: '', phone: '', address: '', city: '', state: '', zip: '', referral: '' };
+  emptyAuth = { email: '', password: '' };
+  emptyProfileForm = { email: '', full_name: '', phone: '', address: '', city: '', state: '', zip: '' };
 
   state = {
-    unlocked: this.loadUnlock(),
-    gatePassword: '',
-    gateRemember: true,
-    gateDisclaimer: false,
-    gateError: null,
-    gateChecking: false,
+    // ── auth (entry gate is now Log in / Sign up) ──
+    session: null,          // { access_token, refresh_token, expires_at, user:{id,email} }
+    authed: false,          // true once signed in — hides the entry overlay
+    authMode: 'login',      // 'login' | 'signup'
+    auth: { email: '', password: '' },
+    authError: null,
+    authNotice: null,
+    authBusy: false,
+    rememberMe: false,      // "remember me on this device" — stored on the profile row too
+    gatePassword: '',       // referral invite password (signup) — bcrypt-checked server-side
+    gateDisclaimer: false,  // 21+ / research-use confirmation on the entry screen
+    // ── checkout referral gate (required before every order) ──
+    orderGateOpen: false,
+    orderGatePassword: '',
+    orderGateError: null,
+    orderGateBusy: false,
+    // ── profile + order history ──
+    profile: null,
+    profileForm: { email: '', full_name: '', phone: '', address: '', city: '', state: '', zip: '' },
+    profileSaving: false,
+    profileMsg: null,
+    myOrders: null,
+    ordersLoading: false,
     cart: this.loadCart(),
     cartOpen: false,
     view: 'cart',
@@ -850,6 +1005,19 @@ class Component extends DCLogic {
   componentDidMount() {
     this.applyTheme(this.state.theme);
     this.loadProducts();
+    this.loadSession();
+    // If "remember me" is off, drop the stored session when the tab closes so a
+    // fresh entry always re-prompts for login.
+    const self = this;
+    try {
+      window.addEventListener('beforeunload', function () {
+        try {
+          if (window.localStorage.getItem(self.REMEMBER_KEY) !== '1') {
+            window.localStorage.removeItem(self.SESSION_KEY);
+          }
+        } catch (e) {}
+      });
+    } catch (e) {}
   }
 
   // ─── Theme (dark default + light) ───────────────────────────────────────────
@@ -879,42 +1047,285 @@ class Component extends DCLogic {
     try { window.localStorage.setItem(this.CART_KEY, JSON.stringify(cart)); } catch (e) {}
   }
 
-  // ─── Referral gate ──────────────────────────────────────────────────────
-  loadUnlock() {
-    try { return window.localStorage.getItem(this.UNLOCK_KEY) === '1'; } catch (e) { return false; }
+  // ─── Auth: entry-screen field setters ───────────────────────────────────
+  setAuthField(k, v) { this.setState(function (s) { const a = Object.assign({}, s.auth); a[k] = v; return { auth: a, authError: null }; }); }
+  setAuthMode(m) { this.setState({ authMode: m, authError: null, authNotice: null }); }
+  setRememberMe(v) { this.setState({ rememberMe: !!v }); }
+  setGatePassword(v) { this.setState({ gatePassword: v, authError: null }); }
+  setGateDisclaimer(v) { this.setState({ gateDisclaimer: !!v, authError: null }); }
+
+  // ─── Auth: session helpers ──────────────────────────────────────────────
+  // Normalise a GoTrue token/signup response into our stored session shape.
+  sessionFrom(j) {
+    const expiresAt = j.expires_at || (Math.floor(Date.now() / 1000) + (j.expires_in || 3600));
+    const user = j.user || (j.id ? j : null);
+    return {
+      access_token: j.access_token,
+      refresh_token: j.refresh_token,
+      expires_at: expiresAt,
+      user: user ? { id: user.id, email: user.email } : null,
+    };
   }
-  setGatePassword(v) { this.setState({ gatePassword: v, gateError: null }); }
-  setGateRemember(v) { this.setState({ gateRemember: !!v }); }
-  setGateDisclaimer(v) { this.setState({ gateDisclaimer: !!v, gateError: null }); }
-  submitGate() {
-    if (!this.state.gateDisclaimer) {
-      this.setState({ gateError: 'Please confirm you are 21+ and agree these are for research use only.' });
+  loadStoredSession() {
+    try { const raw = window.localStorage.getItem(this.SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  storeSession(session, remember) {
+    try {
+      if (session) window.localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+      else window.localStorage.removeItem(this.SESSION_KEY);
+      window.localStorage.setItem(this.REMEMBER_KEY, remember ? '1' : '0');
+    } catch (e) {}
+  }
+  sessionValid(s) { return !!(s && s.access_token && s.expires_at && (s.expires_at * 1000) > Date.now()); }
+  isRemembered() { try { return window.localStorage.getItem(this.REMEMBER_KEY) === '1'; } catch (e) { return false; } }
+
+  // On entry: only auto-restore a session when "remember me" is on. Otherwise the
+  // user must log in again (matching the requested "password on entry" behaviour).
+  loadSession() {
+    const self = this;
+    const remember = this.isRemembered();
+    const s = this.loadStoredSession();
+    if (!remember || !s) {
+      if (!remember) { try { window.localStorage.removeItem(this.SESSION_KEY); } catch (e) {} }
       return;
     }
-    if (this.state.gateChecking) return;
-    const self = this;
-    const candidate = this.state.gatePassword;
-    this.setState({ gateChecking: true, gateError: null });
-    fetch(this.SUPABASE_URL + '/rest/v1/rpc/verify_referral_password', {
+    if (this.sessionValid(s)) {
+      this.setState({ session: s, authed: true, rememberMe: true });
+      this.afterAuth(s);
+      return;
+    }
+    if (s.refresh_token) {
+      this.refreshSession(s.refresh_token).then(function (ns) {
+        if (ns) { self.setState({ session: ns, authed: true, rememberMe: true }); self.afterAuth(ns); }
+      });
+    }
+  }
+
+  // Shared: verify the referral password server-side (returns Promise<boolean>).
+  verifyReferral(candidate) {
+    return fetch(this.SUPABASE_URL + '/rest/v1/rpc/verify_referral_password', {
       method: 'POST',
-      headers: {
-        'apikey': this.SUPABASE_ANON,
-        'Authorization': 'Bearer ' + this.SUPABASE_ANON,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'apikey': this.SUPABASE_ANON, 'Authorization': 'Bearer ' + this.SUPABASE_ANON, 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidate: candidate }),
-    }).then(function (r) {
-      if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? ' — ' + t : '')); });
-      return r.json();
-    }).then(function (ok) {
-      if (ok === true) {
-        if (self.state.gateRemember) { try { window.localStorage.setItem(self.UNLOCK_KEY, '1'); } catch (e) {} }
-        self.setState({ unlocked: true, gateError: null, gatePassword: '', gateChecking: false });
-      } else {
-        self.setState({ gateError: 'Incorrect password. Please check with your referrer.', gateChecking: false });
-      }
+    }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (ok) { return ok === true; });
+  }
+
+  // ─── Auth: log in ───────────────────────────────────────────────────────
+  login() {
+    const self = this;
+    if (this.state.authBusy) return;
+    const email = (this.state.auth.email || '').trim();
+    const password = this.state.auth.password || '';
+    if (!email || !password) { this.setState({ authError: 'Enter your email and password.' }); return; }
+    if (!this.state.gateDisclaimer) { this.setState({ authError: 'Please confirm you are 21+ and agree these are for research use only.' }); return; }
+    this.setState({ authBusy: true, authError: null, authNotice: null });
+    fetch(this.SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': this.SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password }),
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error_description || res.j.msg || res.j.error || 'Invalid email or password.');
+        const session = self.sessionFrom(res.j);
+        const remember = self.state.rememberMe;
+        self.storeSession(session, remember);
+        self.setState({ authed: true, session: session, authBusy: false, auth: Object.assign({}, self.emptyAuth), authError: null });
+        self.persistRemember(remember, session);
+        self.afterAuth(session);
+      }).catch(function (e) {
+        self.setState({ authBusy: false, authError: (e && e.message) ? e.message : 'Could not log in.' });
+      });
+  }
+
+  // ─── Auth: sign up (referral password is the invite) ────────────────────
+  signup() {
+    const self = this;
+    if (this.state.authBusy) return;
+    const email = (this.state.auth.email || '').trim();
+    const password = this.state.auth.password || '';
+    const invite = this.state.gatePassword || '';
+    if (!email || !password) { this.setState({ authError: 'Enter your email and a password.' }); return; }
+    if (password.length < 6) { this.setState({ authError: 'Password must be at least 6 characters.' }); return; }
+    if (!this.state.gateDisclaimer) { this.setState({ authError: 'Please confirm you are 21+ and agree these are for research use only.' }); return; }
+    this.setState({ authBusy: true, authError: null, authNotice: null });
+    this.verifyReferral(invite).then(function (ok) {
+      if (!ok) { self.setState({ authBusy: false, authError: 'Incorrect referral password — please check with your referrer.' }); return; }
+      return fetch(self.SUPABASE_URL + '/auth/v1/signup', {
+        method: 'POST',
+        headers: { 'apikey': self.SUPABASE_ANON, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password }),
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.j.error_description || res.j.msg || res.j.error || 'Could not create account.');
+          if (res.j.access_token) {
+            // Email confirmation off → we get a session immediately.
+            const session = self.sessionFrom(res.j);
+            const remember = self.state.rememberMe;
+            self.storeSession(session, remember);
+            self.setState({ authed: true, session: session, authBusy: false, auth: Object.assign({}, self.emptyAuth), gatePassword: '', authError: null });
+            self.persistRemember(remember, session);
+            self.afterAuth(session);
+          } else {
+            // Email confirmation on → tell them to confirm, then log in.
+            self.setState({ authBusy: false, authMode: 'login', gatePassword: '', authError: null, authNotice: 'Account created. If email confirmation is enabled, check your inbox to confirm, then log in.' });
+          }
+        });
     }).catch(function (e) {
-      self.setState({ gateChecking: false, gateError: 'Could not verify right now — please try again.' });
+      self.setState({ authBusy: false, authError: (e && e.message) ? e.message : 'Could not create account.' });
+    });
+  }
+
+  // ─── Auth: refresh / logout / authed fetch ──────────────────────────────
+  refreshSession(refreshToken) {
+    const self = this;
+    return fetch(this.SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': this.SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.access_token) return null;
+        const session = self.sessionFrom(j);
+        self.storeSession(session, self.isRemembered());
+        return session;
+      }).catch(function () { return null; });
+  }
+  logout() {
+    const self = this;
+    const s = this.state.session;
+    try {
+      if (s && s.access_token) {
+        fetch(this.SUPABASE_URL + '/auth/v1/logout', {
+          method: 'POST',
+          headers: { 'apikey': this.SUPABASE_ANON, 'Authorization': 'Bearer ' + s.access_token },
+        }).catch(function () {});
+      }
+    } catch (e) {}
+    try { window.localStorage.removeItem(this.SESSION_KEY); window.localStorage.setItem(this.REMEMBER_KEY, '0'); } catch (e) {}
+    this.setState({ authed: false, session: null, profile: null, myOrders: null, page: 'home', view: 'cart', cartOpen: false, auth: Object.assign({}, this.emptyAuth), gatePassword: '', gateDisclaimer: false, rememberMe: false });
+  }
+  // fetch() against Supabase with the user's bearer token; refreshes once on 401.
+  // `session` is passed explicitly by callers acting right after login/refresh, since
+  // this.state.session may not have flushed yet (setState can batch).
+  authFetch(path, opts, session) {
+    const self = this;
+    opts = opts || {};
+    const sess0 = session || this.state.session;
+    const doFetch = function (s) {
+      const headers = Object.assign({}, opts.headers || {}, {
+        'apikey': self.SUPABASE_ANON,
+        'Authorization': 'Bearer ' + (s && s.access_token ? s.access_token : self.SUPABASE_ANON),
+      });
+      return fetch(self.SUPABASE_URL + path, Object.assign({}, opts, { headers: headers }));
+    };
+    return doFetch(sess0).then(function (r) {
+      if (r.status !== 401 || !sess0 || !sess0.refresh_token) return r;
+      return self.refreshSession(sess0.refresh_token).then(function (ns) {
+        if (!ns) { self.setState({ authed: false, session: null }); return r; }
+        self.setState({ session: ns });
+        return doFetch(ns);
+      });
+    });
+  }
+
+  // ─── Profile + order history ────────────────────────────────────────────
+  afterAuth(session) { const s = session || this.state.session; this.loadProfile(s); this.loadMyOrders(s); }
+  persistRemember(remember, session) {
+    const s = session || this.state.session;
+    if (!s || !s.user) return;
+    this.authFetch('/rest/v1/profiles?id=eq.' + s.user.id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ remember_me: !!remember }),
+    }, s).catch(function () {});
+  }
+  profileFormFrom(p, email) {
+    p = p || {};
+    return {
+      email: email || p.email || '',
+      full_name: p.full_name || '', phone: p.phone || '',
+      address: p.address || '', city: p.city || '', state: p.state || '', zip: p.zip || '',
+    };
+  }
+  loadProfile(session) {
+    const self = this;
+    const s = session || this.state.session;
+    if (!s || !s.user) return;
+    this.authFetch('/rest/v1/profiles?id=eq.' + s.user.id + '&select=*', { headers: { 'Accept': 'application/json' } }, s)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) {
+        const p = (rows && rows[0]) || null;
+        self.setState({ profile: p, profileForm: self.profileFormFrom(p, s.user.email) });
+        if (p) self.prefillFromProfile(p, s.user.email);
+      }).catch(function () {});
+  }
+  setProfileField(k, v) { this.setState(function (s) { const f = Object.assign({}, s.profileForm); f[k] = v; return { profileForm: f, profileMsg: null }; }); }
+  saveProfile() {
+    const self = this;
+    const s = this.state.session;
+    if (!s || !s.user || this.state.profileSaving) return;
+    const f = this.state.profileForm;
+    const body = {
+      id: s.user.id, email: s.user.email,
+      full_name: (f.full_name || '').trim(), phone: (f.phone || '').trim(),
+      address: (f.address || '').trim(), city: (f.city || '').trim(),
+      state: (f.state || '').trim().toUpperCase(), zip: (f.zip || '').trim(),
+    };
+    this.setState({ profileSaving: true, profileMsg: null });
+    this.authFetch('/rest/v1/profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(body),
+    }).then(function (r) { return r.ok ? r.json() : r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? ' — ' + t : '')); }); })
+      .then(function (rows) {
+        const p = Array.isArray(rows) ? rows[0] : rows;
+        self.setState({ profile: p || body, profileSaving: false, profileMsg: 'Profile saved.' });
+        self.prefillFromProfile(p || body, s.user.email);
+      }).catch(function (e) {
+        self.setState({ profileSaving: false, profileMsg: 'Could not save — ' + (e && e.message ? e.message : 'please try again.') });
+      });
+  }
+  // Fill any empty checkout fields from the saved profile (never clobber typing).
+  prefillFromProfile(p, email) {
+    if (!p) return;
+    this.setState(function (s) {
+      const f = Object.assign({}, s.form);
+      if (!f.email) f.email = email || p.email || '';
+      if (!f.fullName) f.fullName = p.full_name || '';
+      if (!f.phone) f.phone = p.phone || '';
+      if (!f.address) f.address = p.address || '';
+      if (!f.city) f.city = p.city || '';
+      if (!f.state) f.state = p.state || '';
+      if (!f.zip) f.zip = p.zip || '';
+      return { form: f };
+    });
+  }
+  loadMyOrders(session) {
+    const self = this;
+    const s = session || this.state.session;
+    if (!s || !s.user) return;
+    this.setState({ ordersLoading: true });
+    this.authFetch('/rest/v1/orders?select=*&order=created_at.desc', { headers: { 'Accept': 'application/json' } }, s)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) { self.setState({ myOrders: Array.isArray(rows) ? rows : [], ordersLoading: false }); })
+      .catch(function () { self.setState({ myOrders: [], ordersLoading: false }); });
+  }
+
+  // ─── Checkout referral gate (required before every order) ───────────────
+  setOrderGatePassword(v) { this.setState({ orderGatePassword: v, orderGateError: null }); }
+  closeOrderGate() { this.setState({ orderGateOpen: false, orderGatePassword: '', orderGateError: null }); }
+  confirmOrderGate() {
+    const self = this;
+    if (this.state.orderGateBusy) return;
+    const candidate = this.state.orderGatePassword || '';
+    this.setState({ orderGateBusy: true, orderGateError: null });
+    this.verifyReferral(candidate).then(function (ok) {
+      if (!ok) { self.setState({ orderGateBusy: false, orderGateError: 'Incorrect password. Please check with your referrer.' }); return; }
+      self.setState({ orderGateBusy: false, orderGateOpen: false, orderGatePassword: '' });
+      self.submitOrder();
+    }).catch(function () {
+      self.setState({ orderGateBusy: false, orderGateError: 'Could not verify right now — please try again.' });
     });
   }
 
@@ -1009,6 +1420,13 @@ class Component extends DCLogic {
   removeItem(id) { this.setCart(this.state.cart.filter(function (c) { return c.id !== id; })); }
   openCart() { this.setState(function (s) { return { cartOpen: true, view: s.view === 'done' ? 'cart' : s.view }; }); }
   closeCart() { this.setState({ cartOpen: false }); }
+  // Finish the payment flow: drop the completed order from the client entirely —
+  // wipe the localStorage PII mirror and clear the in-memory order state so no
+  // name/email/phone/address lingers after the confirmation screen is dismissed.
+  finishOrder() {
+    try { window.localStorage.removeItem(this.ORDERS_KEY); } catch (e) {}
+    this.setState({ cartOpen: false, view: 'cart', orderNo: null, lastOrder: null, payChecks: {} });
+  }
   goCheckout() { if (this.state.cart.length) this.setState({ view: 'checkout' }); }
   backToCart() { this.setState({ view: 'cart', submitError: null }); }
 
@@ -1029,6 +1447,7 @@ class Component extends DCLogic {
     if (!f.city.trim()) errors.city = 'Required';
     if (!f.state.trim()) errors.state = 'Required';
     if (!/^\d{5}(-\d{4})?$/.test(f.zip.trim())) errors.zip = 'Enter a valid ZIP';
+    if (!f.referral.trim()) errors.referral = 'Required — enter who referred you';
     if (!this.state.ruoConfirmed) errors.ruo = 'Please confirm research use only';
     if (!this.state.disclaimerConfirmed) errors.disclaimer = 'Please confirm you are 21+ and research use only';
     return { errors: errors, valid: Object.keys(errors).length === 0 };
@@ -1070,27 +1489,35 @@ class Component extends DCLogic {
     } catch (e) {}
   }
 
+  // Step 1: validate + require sign-in, then open the referral-password gate.
+  // The order is only submitted after the referral password checks out.
   placeOrder() {
-    const self = this;
     if (this.state.submitting) return;
     const v = this.validate();
     if (!v.valid) { this.setState({ submitError: 'Please complete the highlighted fields.', attempted: true }); return; }
+    if (!this.state.authed || !this.state.session) { this.setState({ submitError: 'Please log in before placing an order.' }); return; }
+    this.setState({ orderGateOpen: true, orderGatePassword: '', orderGateError: null, submitError: null });
+  }
+
+  // Step 2: submit the order as the signed-in user. The DB trigger stamps
+  // user_id = auth.uid() and status = 'new' server-side regardless of the body,
+  // so identity/status can't be spoofed — we still send user_id for clarity.
+  submitOrder() {
+    const self = this;
+    const s = this.state.session;
     const order = this.buildOrder();
+    order.user_id = (s && s.user) ? s.user.id : null;
     this.mirrorLocally(order);
     this.setState({ submitting: true, submitError: null });
-    fetch(this.SUPABASE_URL + '/rest/v1/orders', {
+    this.authFetch('/rest/v1/orders', {
       method: 'POST',
-      headers: {
-        'apikey': this.SUPABASE_ANON,
-        'Authorization': 'Bearer ' + this.SUPABASE_ANON,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify(order),
     }).then(function (r) {
       if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? ' — ' + t : '')); });
       self.saveCart([]);
       self.setState({ submitting: false, view: 'done', orderNo: order.order_number, lastOrder: order, cart: [], form: Object.assign({}, self.emptyForm), payChecks: {} });
+      self.loadMyOrders();
     }).catch(function (e) {
       self.setState({ submitting: false, submitError: 'Could not submit your order — please try again. (' + (e && e.message ? e.message : e) + ')' });
     });
@@ -1138,6 +1565,22 @@ class Component extends DCLogic {
   goHome() {
     this.setState({ page: 'home', cartOpen: false });
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+  }
+  // Customer-facing labels for the order lifecycle statuses (see supabase-schema.sql).
+  STATUS_LABELS = { new: 'Received', in_progress: 'Preparing', ready_for_delivery: 'Ready for delivery', delivered: 'Delivered', cancelled: 'Cancelled' };
+  statusLabel(s) { return this.STATUS_LABELS[s] || (s || 'Received'); }
+  statusColor(s) {
+    if (s === 'delivered') return '#37a24a';
+    if (s === 'cancelled') return '#e8622a';
+    if (s === 'ready_for_delivery') return '#3d95ce';
+    return 'color-mix(in oklab, var(--accent, #8b5cf6) 78%, white)';
+  }
+  goOrders() { this.loadMyOrders(); this.goPage('orders'); }
+  goAccount() {
+    // reset the editable form to the latest saved profile before showing it
+    const s = this.state.session;
+    this.setState({ profileForm: this.profileFormFrom(this.state.profile, s && s.user ? s.user.email : ''), profileMsg: null });
+    this.goPage('account');
   }
 
   renderVals() {
@@ -1209,6 +1652,26 @@ class Component extends DCLogic {
     const lo = this.state.lastOrder;
     const orderNote = this.noteFor(lo);
 
+    // my-orders dashboard rows (RLS returns only this user's orders)
+    const myOrders = (this.state.myOrders || []).map(function (o) {
+      const items = Array.isArray(o.items) ? o.items : [];
+      const itemText = items.map(function (it) { return it.qty + ' × ' + it.name + (it.dose ? ' ' + it.dose : ''); }).join('  ·  ');
+      const d = o.created_at ? new Date(o.created_at) : null;
+      return {
+        order_number: o.order_number,
+        dateLabel: d ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '',
+        statusLabel: self.statusLabel(o.status),
+        statusColor: self.statusColor(o.status),
+        totalLabel: self.fmt(o.total_cents || 0),
+        itemText: itemText,
+        shipTo: (o.city ? (o.city + ', ' + (o.state || '')) : ''),
+      };
+    });
+    const pf = this.state.profileForm || {};
+    const sess = this.state.session;
+    const userEmail = (sess && sess.user) ? sess.user.email : '';
+    const setPF = function (k) { return function (e) { self.setProfileField(k, e && e.target ? e.target.value : ''); }; };
+
     return {
       accent: accent,
       spot: spot,
@@ -1232,6 +1695,7 @@ class Component extends DCLogic {
       toast: this.state.toast,
       openCart: function () { self.openCart(); },
       closeCart: function () { self.closeCart(); },
+      finishOrder: function () { self.finishOrder(); },
       goCheckout: function () { self.goCheckout(); },
       backToCart: function () { self.backToCart(); },
       placeOrder: function () { self.placeOrder(); },
@@ -1257,7 +1721,7 @@ class Component extends DCLogic {
       setReferral: mk('referral'),
       errFullName: err('fullName'), errEmail: err('email'), errPhone: err('phone'),
       errAddress: err('address'), errCity: err('city'), errState: err('state'),
-      errZip: err('zip'), errRuo: err('ruo'), errDisclaimer: err('disclaimer'),
+      errZip: err('zip'), errReferral: err('referral'), errRuo: err('ruo'), errDisclaimer: err('disclaimer'),
       outsideUS: outsideUS,
       ruoConfirmed: this.state.ruoConfirmed,
       setRuo: function (e) { self.setRuo(e && e.target ? e.target.checked : false); },
@@ -1290,19 +1754,69 @@ class Component extends DCLogic {
       themeLabel: this.state.theme === 'light' ? 'DARK' : 'LIGHT',
       toggleTheme: function () { self.toggleTheme(); },
 
-      // referral gate
-      locked: !this.state.unlocked,
+      // ─── entry auth screen (Log in / Sign up) ───
+      locked: !this.state.authed,
+      authIsLogin: this.state.authMode === 'login',
+      authIsSignup: this.state.authMode === 'signup',
+      loginTabBg: this.state.authMode === 'login' ? 'color-mix(in oklab, var(--accent, #8b5cf6) 88%, white)' : 'transparent',
+      loginTabColor: this.state.authMode === 'login' ? '#0b0b0f' : 'var(--text-5)',
+      signupTabBg: this.state.authMode === 'signup' ? 'color-mix(in oklab, var(--accent, #8b5cf6) 88%, white)' : 'transparent',
+      signupTabColor: this.state.authMode === 'signup' ? '#0b0b0f' : 'var(--text-5)',
+      authEmail: this.state.auth.email,
+      authPassword: this.state.auth.password,
+      setAuthEmail: function (e) { self.setAuthField('email', e && e.target ? e.target.value : ''); },
+      setAuthPassword: function (e) { self.setAuthField('password', e && e.target ? e.target.value : ''); },
+      switchToLogin: function () { self.setAuthMode('login'); },
+      switchToSignup: function () { self.setAuthMode('signup'); },
+      rememberMe: this.state.rememberMe,
+      setRememberMe: function (e) { self.setRememberMe(e && e.target ? e.target.checked : false); },
       gatePassword: this.state.gatePassword,
-      gateRemember: this.state.gateRemember,
-      gateDisclaimer: this.state.gateDisclaimer,
-      gateError: this.state.gateError,
-      gateChecking: this.state.gateChecking,
-      gateSubmitLabel: this.state.gateChecking ? 'Checking…' : 'Enter',
       setGatePassword: function (e) { self.setGatePassword(e && e.target ? e.target.value : ''); },
-      setGateRemember: function (e) { self.setGateRemember(e && e.target ? e.target.checked : false); },
+      gateDisclaimer: this.state.gateDisclaimer,
       setGateDisclaimer: function (e) { self.setGateDisclaimer(e && e.target ? e.target.checked : false); },
-      submitGate: function () { self.submitGate(); },
-      gateKey: function (e) { if (e && e.key === 'Enter') self.submitGate(); },
+      authError: this.state.authError,
+      authNotice: this.state.authNotice,
+      authBusy: this.state.authBusy,
+      authSubmitLabel: this.state.authBusy ? 'Please wait…' : (this.state.authMode === 'signup' ? 'Create account' : 'Log in'),
+      submitAuth: function () { if (self.state.authMode === 'signup') self.signup(); else self.login(); },
+      authKey: function (e) { if (e && e.key === 'Enter') { if (self.state.authMode === 'signup') self.signup(); else self.login(); } },
+
+      // ─── account nav + pages ───
+      isAuthed: this.state.authed,
+      userEmail: userEmail,
+      isOrders: this.state.page === 'orders',
+      isAccount: this.state.page === 'account',
+      goOrders: function () { self.goOrders(); },
+      goAccount: function () { self.goAccount(); },
+      logout: function () { self.logout(); },
+
+      // ─── my orders dashboard ───
+      myOrders: myOrders,
+      ordersLoading: this.state.ordersLoading,
+      ordersEmpty: !this.state.ordersLoading && myOrders.length === 0,
+      hasOrders: myOrders.length > 0,
+
+      // ─── profile form ───
+      pfEmail: userEmail,
+      pfFullName: pf.full_name || '', pfPhone: pf.phone || '', pfAddress: pf.address || '',
+      pfCity: pf.city || '', pfState: pf.state || '', pfZip: pf.zip || '',
+      setPfFullName: setPF('full_name'), setPfPhone: setPF('phone'), setPfAddress: setPF('address'),
+      setPfCity: setPF('city'), setPfState: setPF('state'), setPfZip: setPF('zip'),
+      saveProfile: function () { self.saveProfile(); },
+      profileSaving: this.state.profileSaving,
+      profileMsg: this.state.profileMsg,
+      profileSaveLabel: this.state.profileSaving ? 'Saving…' : 'Save profile',
+
+      // ─── checkout referral gate (before every order) ───
+      orderGateOpen: this.state.orderGateOpen,
+      orderGatePassword: this.state.orderGatePassword,
+      setOrderGatePassword: function (e) { self.setOrderGatePassword(e && e.target ? e.target.value : ''); },
+      orderGateError: this.state.orderGateError,
+      orderGateBusy: this.state.orderGateBusy,
+      orderGateLabel: this.state.orderGateBusy ? 'Verifying…' : 'Confirm & place order',
+      confirmOrderGate: function () { self.confirmOrderGate(); },
+      closeOrderGate: function () { self.closeOrderGate(); },
+      orderGateKey: function (e) { if (e && e.key === 'Enter') self.confirmOrderGate(); },
     };
   }
 }
