@@ -54,6 +54,57 @@
   @keyframes vl-slidein { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   @keyframes vl-fadein { from { opacity: 0; } to { opacity: 1; } }
   @keyframes vl-toast { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+  /* ─── Responsive: tablet & phone, down to iPhone SE (375px). ───
+     Inline styles can't carry media queries, so layout containers are tagged
+     with vl-* classes and these rules override them (with !important, since
+     inline styles otherwise win). */
+  @media (max-width: 900px) {
+    .vl-sec  { padding: 76px 24px !important; }
+    .vl-pad  { padding-left: 24px !important; padding-right: 24px !important; }
+    /* Stack the hero. flex-wrap:nowrap is essential: a wrapping column flex sizes
+       each column to its content (~460px vials), which would keep the vial stage —
+       and the table inside it — narrow. nowrap lets align-items:stretch give the
+       vial stage the full width so the table can span edge to edge. */
+    .vl-hero { flex-direction: column !important; flex-wrap: nowrap !important; padding-left: 24px !important; padding-right: 24px !important; }
+    .vl-vial-stage { width: 100% !important; align-self: stretch !important; }
+    /* Vials now sit under the text — the table spans the full viewport. The vial
+       stage is full-width and viewport-centered, so a 100vw child reaches both edges. */
+    .vl-table { width: 100vw !important; max-width: 100vw !important; }
+    /* Decorative corner labels overlap the vials / clip off-screen when stacked. */
+    .vl-hero-note { display: none !important; }
+    .vl-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+    .vl-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+    .vl-grid-2 { grid-template-columns: 1fr !important; }
+    .vl-stat { grid-template-columns: repeat(2, 1fr) !important; }
+    .vl-testing { grid-template-columns: 1fr !important; gap: 44px !important; }
+    .vl-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+    .vl-nav-links { gap: 20px !important; }
+  }
+  @media (max-width: 720px) {
+    .vl-nav-links { display: none !important; }
+  }
+  @media (max-width: 560px) {
+    .vl-sec  { padding: 58px 18px !important; }
+    .vl-pad  { padding-left: 18px !important; padding-right: 18px !important; }
+    .vl-hero { padding-top: 32px !important; padding-left: 18px !important; padding-right: 18px !important; }
+    /* Don't stretch the hero to fill the viewport — that pushes empty space between
+       the text and the (smaller) vials. Let each block take its natural height and
+       sit the vials directly under the text. */
+    .vl-hero-sec { min-height: 0 !important; }
+    .vl-hero > div { flex: 0 0 auto !important; }
+    .vl-vial-stage { min-height: 0 !important; justify-content: flex-start !important; padding-top: 8px !important; }
+    .vl-grid-4, .vl-grid-3, .vl-grid-2 { grid-template-columns: 1fr !important; }
+    .vl-stat { grid-template-columns: 1fr 1fr !important; }
+    .vl-stat > div { padding: 22px 18px !important; }
+    .vl-footer-grid { grid-template-columns: 1fr !important; gap: 30px !important; }
+    .vl-nav { height: 58px !important; padding-left: 18px !important; padding-right: 18px !important; }
+    .vl-logo-nav { height: 21px !important; }
+    .vl-vials { gap: 8px !important; }
+    .vl-vial-bpc  { height: 175px !important; }
+    .vl-vial-ghk  { height: 214px !important; }
+    .vl-vial-reta { height: 182px !important; }
+  }
 </style>
 </helmet>
 <div style="--accent: {{ accent }}; --spot: {{ spot }}; position: relative; min-height: 100vh; overflow-x: hidden; background: var(--bg);">
@@ -105,11 +156,11 @@
 
   <!-- NAV -->
   <header style="position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); background: var(--nav-bg); border-bottom: 1px solid var(--line-1);">
-    <nav style="max-width: 1300px; margin: 0 auto; padding: 0 40px; height: 66px; display: flex; align-items: center; justify-content: space-between;">
+    <nav class="vl-nav" style="max-width: 1300px; margin: 0 auto; padding: 0 40px; height: 66px; display: flex; align-items: center; justify-content: space-between;">
       <div onClick="{{ goTop }}" style="display: flex; align-items: center; cursor: pointer;">
-        <img src="assets/long_logo.png" alt="Vitalis Labs" class="vl-logo" style="height: 26px; width: auto;">
+        <img src="assets/long_logo.png" alt="Vitalis Labs" class="vl-logo vl-logo-nav" style="height: 26px; width: auto;">
       </div>
-      <div style="display: flex; align-items: center; gap: 34px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--text-5);">
+      <div class="vl-nav-links" style="display: flex; align-items: center; gap: 34px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--text-5);">
         <span onClick="{{ goCatalog }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">CATALOG</span>
         <span onClick="{{ goProcess }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">PROCESS</span>
         <span onClick="{{ goTesting }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">TESTING</span>
@@ -130,7 +181,7 @@
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
 
   <!-- HERO -->
-  <section style="position: relative; min-height: calc(100vh - 66px); overflow: hidden; display: flex; flex-direction: column;">
+  <section class="vl-hero-sec" style="position: relative; min-height: calc(100vh - 66px); overflow: hidden; display: flex; flex-direction: column;">
     <!-- light layers -->
     <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; z-index: 0; filter: brightness(var(--spot, 1));">
       <div style="position: absolute; inset: 0; background: radial-gradient(58% 55% at 70% -6%, color-mix(in oklab, var(--accent, #8b5cf6) 26%, transparent) 0%, transparent 68%);"></div>
@@ -144,7 +195,7 @@
     </div>
 
     <!-- hero content -->
-    <div style="position: relative; z-index: 2; max-width: 1300px; width: 100%; margin: 0 auto; padding: 54px 40px 0; flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 24px;">
+    <div class="vl-hero" style="position: relative; z-index: 2; max-width: 1300px; width: 100%; margin: 0 auto; padding: 54px 40px 0; flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 24px;">
       <!-- corner crop marks -->
       <div aria-hidden="true" style="position: absolute; top: 40px; left: 40px; width: 16px; height: 16px; border-top: 1px solid var(--line-4); border-left: 1px solid var(--line-4);"></div>
       <div aria-hidden="true" style="position: absolute; top: 40px; right: 40px; width: 16px; height: 16px; border-top: 1px solid var(--line-4); border-right: 1px solid var(--line-4);"></div>
@@ -165,41 +216,41 @@
       </div>
 
       <!-- vial stage -->
-      <div style="flex: 1 1 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding-bottom: 40px; min-height: 380px;">
+      <div class="vl-vial-stage" style="flex: 1 1 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding-bottom: 40px; min-height: 380px;">
         <!-- vials -->
-        <div style="display: flex; align-items: flex-end; justify-content: center; gap: 26px;">
+        <div class="vl-vials" style="display: flex; align-items: flex-end; justify-content: center; gap: 26px;">
           <!-- BPC-157 -->
           <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 1;">
             <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(55,162,74,0.5), transparent 68%); filter: blur(20px); z-index: 0;"></div>
-            <img src="assets/bpc-157.png" alt="Vitalis Labs BPC-157 10mg" style="position: relative; z-index: 1; height: 300px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
+            <img src="assets/bpc-157.png" alt="Vitalis Labs BPC-157 10mg" class="vl-vial-bpc" style="position: relative; z-index: 1; height: 300px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
           </div>
           <!-- GHK-Cu center -->
           <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 3; margin: 0 -6px;">
             <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--accent, #8b5cf6) 55%, transparent), transparent 66%); filter: blur(22px); z-index: 0;"></div>
-            <img src="assets/ghk-cu.png" alt="Vitalis Labs GHK-Cu 100mg" style="position: relative; z-index: 1; height: 366px; width: auto; filter: drop-shadow(0 36px 30px rgba(0,0,0,0.7));">
+            <img src="assets/ghk-cu.png" alt="Vitalis Labs GHK-Cu 100mg" class="vl-vial-ghk" style="position: relative; z-index: 1; height: 366px; width: auto; filter: drop-shadow(0 36px 30px rgba(0,0,0,0.7));">
           </div>
           <!-- RETA 30mg -->
           <div onClick="{{ goCatalog }}" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform .4s ease; z-index: 1;">
             <div style="position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 155px; height: 155px; border-radius: 50%; background: radial-gradient(circle, rgba(232,98,42,0.5), transparent 68%); filter: blur(20px); z-index: 0;"></div>
-            <img src="assets/reta-30.png" alt="Vitalis Labs Retatrutide 30mg" style="position: relative; z-index: 1; height: 312px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
+            <img src="assets/reta-30.png" alt="Vitalis Labs Retatrutide 30mg" class="vl-vial-reta" style="position: relative; z-index: 1; height: 312px; width: auto; filter: drop-shadow(0 30px 26px rgba(0,0,0,0.65));">
           </div>
         </div>
         <!-- table the vials rest on (top edge sits at the vial bases, fades down and out to the sides) -->
-        <div aria-hidden="true" style="width: 460px; max-width: 92%; z-index: 0; pointer-events: none;">
+        <div aria-hidden="true" class="vl-table" style="width: 460px; max-width: 92%; z-index: 0; pointer-events: none; -webkit-mask-image: linear-gradient(to right, transparent, #000 24%, #000 76%, transparent); mask-image: linear-gradient(to right, transparent, #000 24%, #000 76%, transparent);">
           <div style="height: 1px; background: linear-gradient(to right, transparent, var(--line-4) 24%, var(--line-4) 76%, transparent);"></div>
           <div style="height: 44px; background: linear-gradient(to bottom, var(--line-1), transparent 88%);"></div>
         </div>
 
         <!-- hero footer annotations -->
-        <div style="position: absolute; left: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">LOT-VERIFIED / HPLC · MS</div>
-        <div style="position: absolute; right: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">01 / SELECT</div>
+        <div class="vl-hero-note" style="position: absolute; left: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">LOT-VERIFIED / HPLC · MS</div>
+        <div class="vl-hero-note" style="position: absolute; right: 0; bottom: 14px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.16em; color: var(--text-9);">01 / SELECT</div>
       </div>
     </div>
   </section>
 
   <!-- STAT STRIP -->
   <section style="border-top: 1px solid var(--line-1); border-bottom: 1px solid var(--line-1);">
-    <div style="max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr);">
+    <div class="vl-stat" style="max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr);">
       <div style="padding: 30px 40px; border-right: 1px solid var(--line-1);">
         <div style="font-size: 30px; font-weight: 400; letter-spacing: -0.02em;">99%+</div>
         <div style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; color: var(--text-7); margin-top: 6px;">VERIFIED PURITY</div>
@@ -220,7 +271,7 @@
   </section>
 
   <!-- CATALOG -->
-  <section id="catalog" style="max-width: 1300px; margin: 0 auto; padding: 116px 40px 96px;">
+  <section id="catalog" class="vl-sec" style="max-width: 1300px; margin: 0 auto; padding: 116px 40px 96px;">
     <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; flex-wrap: wrap; margin-bottom: 52px;">
       <div>
         <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">01 — CATALOG</div>
@@ -228,7 +279,7 @@
       </div>
       <p style="margin: 0; max-width: 34ch; font-size: 14px; line-height: 1.6; color: var(--text-6); font-family: 'Space Mono', monospace; letter-spacing: 0.02em;">All products supplied for laboratory research use only. Certificate of analysis included.</p>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+    <div class="vl-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
       <sc-for list="{{ products }}" as="item" hint-placeholder-count="4">
         <div style="--cap: {{ item.cap }}; border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-3); overflow: hidden; display: flex; flex-direction: column; transition: border-color .3s ease, background .3s ease;" style-hover="border-color: var(--line-4); background: var(--panel-2);">
           <div style="position: relative; height: 236px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
@@ -264,12 +315,12 @@
 
   <!-- PROCESS -->
   <section id="process" style="border-top: 1px solid var(--line-1); background: var(--bg-2);">
-    <div style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
+    <div class="vl-sec" style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
       <div style="max-width: 640px; margin-bottom: 64px;">
         <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">02 — PROCESS</div>
         <h2 style="margin: 0; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">From synthesis to your bench.</h2>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
+      <div class="vl-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
         <div style="background: var(--bg-2); padding: 34px 28px; display: flex; flex-direction: column; gap: 16px;">
           <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">01</span>
           <h3 style="margin: 0; font-size: 18px; font-weight: 500;">U.S. Synthesis</h3>
@@ -296,7 +347,7 @@
 
   <!-- TESTING / COA -->
   <section id="testing" style="border-top: 1px solid var(--line-1);">
-    <div style="max-width: 1300px; margin: 0 auto; padding: 116px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;">
+    <div class="vl-sec vl-testing" style="max-width: 1300px; margin: 0 auto; padding: 116px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;">
       <div>
         <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">03 — VERIFICATION</div>
         <h2 style="margin: 0 0 24px; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">Every batch, independently verified.</h2>
@@ -337,12 +388,12 @@
 
   <!-- REVIEWS -->
   <section id="reviews" style="border-top: 1px solid var(--line-1); background: var(--bg-2);">
-    <div style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
+    <div class="vl-sec" style="max-width: 1300px; margin: 0 auto; padding: 108px 40px;">
       <div style="max-width: 640px; margin-bottom: 56px;">
         <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 16px;">04 — FIELD NOTES</div>
         <h2 style="margin: 0; font-weight: 300; font-size: clamp(30px, 4vw, 50px); letter-spacing: -0.02em;">Trusted by research labs.</h2>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+      <div class="vl-grid-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
         <div style="border: 1px solid var(--line-1); border-radius: var(--r-lg); padding: 30px; background: var(--bg-3); display: flex; flex-direction: column; gap: 18px;">
           <div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white); letter-spacing: 0.15em; font-size: 13px;">★★★★★</div>
           <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text-2);">"Delivered the same day I ordered. Everything arrived as expected and the process was smooth."</p>
@@ -367,13 +418,13 @@
 
   <!-- ══════════ SUPPORT PAGE: SHIPPING ══════════ -->
   <sc-if value="{{ isShipping }}" hint-placeholder-val="{{ false }}">
-  <section style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+  <section class="vl-sec" style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
     <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
     <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — SHIPPING</div>
     <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Shipping &amp; delivery</h1>
     <p style="margin: 0 0 52px; font-size: 16px; line-height: 1.7; color: var(--text-4); max-width: 62ch;">Every order ships cold-chain from the United States. Here's how orders are prepared, packed, and delivered once your payment is received.</p>
 
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
+    <div class="vl-grid-2" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line-1); border: 1px solid var(--line-1); border-radius: var(--r-md); overflow: hidden;">
       <div style="background: var(--bg-2); padding: 30px 28px; display: flex; flex-direction: column; gap: 12px;">
         <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">PROCESSING</span>
         <h3 style="margin: 0; font-size: 17px; font-weight: 500;">Dispatched within 48 hours</h3>
@@ -405,13 +456,13 @@
 
   <!-- ══════════ SUPPORT PAGE: CONTACT ══════════ -->
   <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
-  <section style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+  <section class="vl-sec" style="max-width: 940px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
     <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
     <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — CONTACT</div>
     <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Get in touch</h1>
     <p style="margin: 0 0 52px; font-size: 16px; line-height: 1.7; color: var(--text-4); max-width: 62ch;">Reach out about an order, product availability, or a certificate of analysis. Include your order number where you have one so we can find it quickly.</p>
 
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+    <div class="vl-grid-2" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
       <div style="border: 1px solid var(--line-2); border-radius: var(--r-lg); background: var(--bg-3); padding: 28px;">
         <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8); margin-bottom: 12px;">EMAIL</div>
         <a href="mailto:support@vitalislabs.com" style="font-size: 18px; font-weight: 500; color: var(--text); word-break: break-all;" style-hover="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white);">support@vitalislabs.com</a>
@@ -440,7 +491,7 @@
 
   <!-- ══════════ SUPPORT PAGE: FAQ ══════════ -->
   <sc-if value="{{ isFAQ }}" hint-placeholder-val="{{ false }}">
-  <section style="max-width: 860px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
+  <section class="vl-sec" style="max-width: 860px; margin: 0 auto; padding: 84px 40px 96px; min-height: calc(100vh - 66px);">
     <span onClick="{{ goTop }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">← BACK TO HOME</span>
     <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin: 30px 0 16px;">SUPPORT — FAQ</div>
     <h1 style="margin: 0 0 20px; font-weight: 300; font-size: clamp(32px, 5vw, 54px); letter-spacing: -0.02em;">Frequently asked questions</h1>
@@ -485,8 +536,8 @@
 
   <!-- FOOTER -->
   <footer style="border-top: 1px solid var(--line-1);">
-    <div style="max-width: 1300px; margin: 0 auto; padding: 80px 40px 40px;">
-      <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 56px; border-bottom: 1px solid var(--line-1);">
+    <div class="vl-pad" style="max-width: 1300px; margin: 0 auto; padding: 80px 40px 40px;">
+      <div class="vl-footer-grid" style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 56px; border-bottom: 1px solid var(--line-1);">
         <div>
           <div style="display: flex; align-items: center; margin-bottom: 18px;">
             <img src="assets/long_logo.png" alt="Vitalis Labs" class="vl-logo" style="height: 28px; width: auto;">
