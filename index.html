@@ -48,6 +48,10 @@
   :root[data-theme="light"] .vl-logo { filter: invert(1); }
   ::selection { background: color-mix(in oklab, #8b5cf6 55%, transparent); color: #fff; }
   input::placeholder { color: var(--text-9); }
+  /* Mobile/tablet nav toggle — hidden on desktop, revealed under 1010px (where the
+     inline nav links are display:none). */
+  .vl-nav-burger { display: none; }
+  .vl-mobile-menu { display: none; }
   @keyframes vl-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes vl-breathe { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
   @keyframes vl-breathe2 { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
@@ -79,10 +83,16 @@
     .vl-stat { grid-template-columns: repeat(2, 1fr) !important; }
     .vl-testing { grid-template-columns: 1fr !important; gap: 44px !important; }
     .vl-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
-    .vl-nav-links { gap: 20px !important; }
   }
-  @media (max-width: 720px) {
+  /* Switch to the hamburger menu at tablet widths too — the full inline link set
+     (up to 6 links when signed in, plus logo, log-out and cart) crowds together
+     below ~1010px. */
+  @media (max-width: 1010px) {
     .vl-nav-links { display: none !important; }
+    .vl-nav-burger { display: inline-flex !important; }
+    .vl-mobile-menu { display: block !important; }
+    /* LOG OUT moves into the dropdown here so it can't crowd the logo. */
+    .vl-nav-logout { display: none !important; }
   }
   @media (max-width: 560px) {
     .vl-sec  { padding: 58px 18px !important; }
@@ -194,7 +204,7 @@
       </div>
       <div style="display: flex; align-items: center; gap: 16px;">
         <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
-          <span onClick="{{ logout }}" title="{{ userEmail }}" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">LOG OUT</span>
+          <span onClick="{{ logout }}" title="{{ userEmail }}" class="vl-nav-logout" style="cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--text-6); transition: color .2s;" style-hover="color: var(--text);">LOG OUT</span>
         </sc-if>
         <div onClick="{{ openCart }}" style="display: flex; align-items: center; gap: 9px; cursor: pointer; border: 1px solid var(--line-3); padding: 8px 15px; border-radius: var(--r-pill); transition: border-color .2s, background .2s;" style-hover="border-color: var(--line-5); background: var(--hover-bg);">
           <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em;">CART</span>
@@ -202,8 +212,33 @@
             <span style="min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--accent, #8b5cf6) 90%, white); color: #0b0b0f; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">{{ countLabel }}</span>
           </sc-if>
         </div>
+        <!-- Mobile menu toggle — only visible under 720px -->
+        <div onClick="{{ toggleMobileMenu }}" class="vl-nav-burger" aria-label="Menu" style="align-items: center; justify-content: center; width: 38px; height: 38px; cursor: pointer; border: 1px solid var(--line-3); border-radius: var(--r-sm); color: var(--text-3);">
+          <sc-if value="{{ mobileMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+          </sc-if>
+          <sc-if value="{{ mobileMenuClosed }}" hint-placeholder-val="{{ true }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+          </sc-if>
+        </div>
       </div>
     </nav>
+    <!-- Mobile dropdown menu — collapsible list of the same nav links. -->
+    <sc-if value="{{ mobileMenuOpen }}" hint-placeholder-val="{{ false }}">
+      <div class="vl-mobile-menu" style="border-top: 1px solid var(--line-1); background: var(--nav-bg); animation: vl-fadein .18s ease;">
+        <div style="display: flex; flex-direction: column; padding: 8px 18px 16px; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 0.14em; color: var(--text-4);">
+          <span onClick="{{ mCatalog }}" style="padding: 14px 2px; border-bottom: 1px solid var(--line-1); cursor: pointer;">CATALOG</span>
+          <span onClick="{{ mProcess }}" style="padding: 14px 2px; border-bottom: 1px solid var(--line-1); cursor: pointer;">PROCESS</span>
+          <span onClick="{{ mTesting }}" style="padding: 14px 2px; border-bottom: 1px solid var(--line-1); cursor: pointer;">TESTING</span>
+          <span onClick="{{ mReviews }}" style="padding: 14px 2px; cursor: pointer;">REVIEWS</span>
+          <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
+            <span onClick="{{ mOrders }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer;">MY ORDERS</span>
+            <span onClick="{{ mAccount }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer;">PROFILE</span>
+            <span onClick="{{ mLogout }}" title="{{ userEmail }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer; color: var(--text-6);">LOG OUT</span>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
   </header>
 
   <!-- HOME (hero → reviews). Support pages replace this block via {{ page }}. -->
@@ -1000,6 +1035,7 @@ class Component extends DCLogic {
     payChecks: {},           // confirmation checkboxes on the payment screen
     theme: 'dark',           // dark is the only theme surfaced in the UI
     page: 'home',            // 'home' | 'shipping' | 'contact' | 'faq' — client-side support pages
+    mobileMenuOpen: false,   // collapsible nav dropdown on phones (< 720px)
   };
 
   componentDidMount() {
@@ -1566,6 +1602,8 @@ class Component extends DCLogic {
     this.setState({ page: 'home', cartOpen: false });
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
   }
+  toggleMobileMenu() { this.setState({ mobileMenuOpen: !this.state.mobileMenuOpen }); }
+  closeMobileMenu() { this.setState({ mobileMenuOpen: false }); }
   // Customer-facing labels for the order lifecycle statuses (see supabase-schema.sql).
   STATUS_LABELS = { new: 'Received', in_progress: 'Preparing', ready_for_delivery: 'Ready for delivery', delivered: 'Delivered', cancelled: 'Cancelled' };
   statusLabel(s) { return this.STATUS_LABELS[s] || (s || 'Received'); }
@@ -1704,6 +1742,18 @@ class Component extends DCLogic {
       goProcess: function () { self.scrollTo('process'); },
       goTesting: function () { self.scrollTo('testing'); },
       goReviews: function () { self.scrollTo('reviews'); },
+
+      // mobile nav dropdown (< 720px) — same destinations, but close the menu on tap
+      mobileMenuOpen: this.state.mobileMenuOpen,
+      mobileMenuClosed: !this.state.mobileMenuOpen,
+      toggleMobileMenu: function () { self.toggleMobileMenu(); },
+      mCatalog: function () { self.closeMobileMenu(); self.scrollTo('catalog'); },
+      mProcess: function () { self.closeMobileMenu(); self.scrollTo('process'); },
+      mTesting: function () { self.closeMobileMenu(); self.scrollTo('testing'); },
+      mReviews: function () { self.closeMobileMenu(); self.scrollTo('reviews'); },
+      mOrders: function () { self.closeMobileMenu(); self.goOrders(); },
+      mAccount: function () { self.closeMobileMenu(); self.goAccount(); },
+      mLogout: function () { self.closeMobileMenu(); self.logout(); },
 
       // support pages
       isHome: this.state.page === 'home',
