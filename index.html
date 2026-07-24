@@ -738,16 +738,16 @@
               <div style="width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-md);">
                 <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-8);">CONFIRM EACH STEP</div>
                 <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
-                  <input type="checkbox" checked="{{ pay1 }}" onChange="{{ setPay1 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
-                  I sent <strong>{{ orderAmountLabel }}</strong> to {{ venmoHandle }} on Venmo.
+                  <input type="checkbox" checked="{{ pay3 }}" onChange="{{ setPay3 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                  I understand my order is prepared once payment is received, and may be refunded in full if it cannot be filled.
                 </label>
                 <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
                   <input type="checkbox" checked="{{ pay2 }}" onChange="{{ setPay2 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
                   I pasted the order note above into my Venmo payment.
                 </label>
                 <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; line-height: 1.5; color: var(--text-3); cursor: pointer;">
-                  <input type="checkbox" checked="{{ pay3 }}" onChange="{{ setPay3 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
-                  I understand my order is prepared once payment is received, and may be refunded in full if it cannot be filled.
+                  <input type="checkbox" checked="{{ pay1 }}" onChange="{{ setPay1 }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+                  I sent <strong>{{ orderAmountLabel }}</strong> to {{ venmoHandle }} on Venmo.
                 </label>
               </div>
 
