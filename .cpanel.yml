@@ -1,0 +1,54 @@
+---
+# cPanel Git deployment — Vitalis Labs
+#
+# This deploys ONLY the custom `vitalis` theme. WordPress core, WooCommerce, and
+# wp-config.php are installed and owned by the server (see DEPLOY-CPANEL.md) and
+# are deliberately NOT copied from git:
+#
+#   - wordpress/ in this repo is a reference copy of core. Overwriting the
+#     server's core would break WordPress auto-updates and can leave a
+#     half-updated install.
+#   - WooCommerce is not in this repo at all; docker/setup.sh installs it.
+#   - wp-config.php holds live DB credentials and salts. It must never be in git.
+#
+# cPanel forbids wildcards in deployment tasks, so every file is listed. When you
+# add a theme file, add a matching /bin/cp line here or it will not deploy.
+#
+# THEMEPATH assumes the store is the main domain (public_html). For a subdomain,
+# change it to e.g. $HOME/shop.vitalislabs.com/wp-content/themes/vitalis
+deployment:
+  tasks:
+    - export THEMEPATH=$HOME/public_html/wp-content/themes/vitalis
+    - export SRC=wordpress/wp-content/themes/vitalis
+    - /bin/mkdir -p $THEMEPATH/inc
+    - /bin/mkdir -p $THEMEPATH/woocommerce
+    - /bin/mkdir -p $THEMEPATH/assets
+
+    # Template files
+    - /bin/cp $SRC/style.css $THEMEPATH/style.css
+    - /bin/cp $SRC/functions.php $THEMEPATH/functions.php
+    - /bin/cp $SRC/index.php $THEMEPATH/index.php
+    - /bin/cp $SRC/header.php $THEMEPATH/header.php
+    - /bin/cp $SRC/footer.php $THEMEPATH/footer.php
+    - /bin/cp $SRC/front-page.php $THEMEPATH/front-page.php
+
+    # Includes — password gate, referral field, Venmo gateway, SMTP
+    - /bin/cp $SRC/inc/gate.php $THEMEPATH/inc/gate.php
+    - /bin/cp $SRC/inc/referral.php $THEMEPATH/inc/referral.php
+    - /bin/cp $SRC/inc/venmo.php $THEMEPATH/inc/venmo.php
+    - /bin/cp $SRC/inc/mail.php $THEMEPATH/inc/mail.php
+
+    # WooCommerce template overrides
+    - /bin/cp $SRC/woocommerce/content-product.php $THEMEPATH/woocommerce/content-product.php
+
+    # Theme assets
+    - /bin/cp $SRC/assets/long_logo.png $THEMEPATH/assets/long_logo.png
+    - /bin/cp $SRC/assets/bpc-157.png $THEMEPATH/assets/bpc-157.png
+    - /bin/cp $SRC/assets/ghk-cu.png $THEMEPATH/assets/ghk-cu.png
+    - /bin/cp $SRC/assets/reta-10.png $THEMEPATH/assets/reta-10.png
+    - /bin/cp $SRC/assets/reta-30.png $THEMEPATH/assets/reta-30.png
+    - /bin/cp $SRC/assets/venmo.png $THEMEPATH/assets/venmo.png
+
+    # Web server must be able to read what we just wrote.
+    - /bin/find $THEMEPATH -type d -exec chmod 755 {} +
+    - /bin/find $THEMEPATH -type f -exec chmod 644 {} +

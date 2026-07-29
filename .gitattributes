@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Files that run on the Linux host must check out with LF regardless of the
+# client platform. A CRLF .cpanel.yml breaks cPanel's YAML parser, and a CRLF
+# shell script fails with "bad interpreter: /bin/sh^M".
+.cpanel.yml  text eol=lf
+*.sh         text eol=lf
+*.php        text eol=lf

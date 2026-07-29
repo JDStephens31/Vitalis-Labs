@@ -5,16 +5,30 @@
 # Run once (after `docker compose up -d`) with:
 #   docker compose run --rm wpcli sh /setup.sh
 #
+# Or against a real host over SSH (see DEPLOY-CPANEL.md), where WordPress lives
+# somewhere else and the seed images come from the repo instead of a bind mount:
+#   WP_PATH=$HOME/public_html \
+#   SEED_DIR=$HOME/repositories/Vitalis-Labs/assets \
+#   WP_URL=https://vitalislabs.com sh docker/setup.sh
+#
 # Idempotent: safe to re-run. It will skip anything already done.
 # ============================================================================
 set -e
 
-# wp-cli runs as www-data (uid 33) which has no home dir; point HOME at a
-# writable location so its cache works and `wp media import` can stage files.
-export HOME=/tmp
-export WP_CLI_CACHE_DIR=/tmp/.wp-cli-cache
+# In Docker, wp-cli runs as www-data (uid 33) which has no home dir, so point
+# HOME at a writable location for its cache and `wp media import` staging. On a
+# real host the user already has a home dir — keep it.
+if [ ! -w "${HOME:-/nonexistent}" ]; then
+  export HOME=/tmp
+fi
+export WP_CLI_CACHE_DIR="${WP_CLI_CACHE_DIR:-$HOME/.wp-cli-cache}"
 
-WP="wp --path=/var/www/html"
+# Where WordPress is installed, and where the catalog images come from. The
+# defaults are the Docker layout; override both when running on real hosting.
+WP_PATH="${WP_PATH:-/var/www/html}"
+SEED_DIR="${SEED_DIR:-/seed-assets}"
+
+WP="wp --path=$WP_PATH"
 
 echo "==> Waiting for the database + WordPress files to be ready..."
 i=0
@@ -103,13 +117,13 @@ else
 fi
 
 # ── 5. Catalog images → media library ────────────────────────────────────────
-# Import the vial PNGs from /seed-assets (mounted from ./assets) and remember
+# Import the vial PNGs from $SEED_DIR (./assets, bind-mounted in Docker) and remember
 # the attachment IDs so we can attach them to products.
 import_img() {
-  # $1 = filename in /seed-assets ; echoes the attachment ID.
+  # $1 = filename in $SEED_DIR ; echoes the attachment ID.
   # Idempotent: media import stores the title without the extension, so we
   # dedup against that to avoid re-importing on every run.
-  file="/seed-assets/$1"
+  file="$SEED_DIR/$1"
   [ -f "$file" ] || { echo ""; return; }
   title=$(echo "$1" | sed 's/\.[^.]*$//')
   existing=$($WP post list --post_type=attachment --title="$title" --field=ID --format=ids 2>/dev/null | awk '{print $1}')
