@@ -1,0 +1,427 @@
+/*
+Theme Name: Vitalis Labs
+Theme URI: https://vitalislabs.local
+Author: Vitalis Labs
+Description: Dark research-lab storefront theme for Vitalis Labs. Matches the original static site (Space Grotesk / Space Mono, deep-black palette, purple accents) and styles WooCommerce shop, product, cart, and checkout pages.
+Version: 1.0.0
+Requires at least: 6.4
+Requires PHP: 8.0
+License: GNU General Public License v2 or later
+Text Domain: vitalis
+WC requires at least: 8.0
+WC tested up to: 9.9
+*/
+
+/* ============================================================
+   Design tokens — pulled from the original index.html (dark)
+   ============================================================ */
+:root {
+  --bg:        #08080a;
+  --panel:     #0c0c10;
+  --panel-2:   #121218;
+  --text:      #f3f2f6;
+  --muted:     #9a99a6;
+  --border:    rgba(255,255,255,0.08);
+  --border-2:  rgba(255,255,255,0.14);
+  --accent:    #8b5cf6;
+  --accent-2:  #7c3aed;
+  --link:      #c4b5fd;
+  --link-hover:#ddd6fe;
+  --nav-bg:    rgba(8,8,10,0.82);
+  --hover-bg:  rgba(255,255,255,0.03);
+  --green:     #37a24a;
+  --orange:    #e8622a;
+  --r-sm: 3px;
+  --r-md: 4px;
+  --r-lg: 6px;
+  --maxw: 1160px;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body.vitalis {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--link); text-decoration: none; }
+a:hover { color: var(--link-hover); }
+img { max-width: 100%; height: auto; }
+h1,h2,h3,h4 { font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+.mono, .price, .woocommerce-Price-amount { font-family: 'Space Mono', ui-monospace, monospace; }
+
+.vitalis-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+/* ============================================================
+   Header / nav
+   ============================================================ */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--nav-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.site-header .bar {
+  display: flex; align-items: center; gap: 28px;
+  height: 64px;
+}
+.site-brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
+.site-brand .brand-logo,
+.site-brand img { height: 28px !important; width: auto !important; max-width: 220px; display: block; }
+.site-brand .brand-text {
+  font-weight: 700; letter-spacing: 0.14em; font-size: 15px; text-transform: uppercase;
+}
+.main-nav { margin-left: auto; }
+.main-nav ul { list-style: none; display: flex; gap: 22px; margin: 0; padding: 0; align-items: center; }
+.main-nav a {
+  color: var(--muted); font-size: 14px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 2px;
+}
+.main-nav a:hover { color: var(--text); }
+.header-cart a {
+  color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px;
+  border: 1px solid var(--border-2); padding: 8px 14px; border-radius: var(--r-sm);
+}
+.header-cart a:hover { border-color: var(--accent); color: var(--link-hover); }
+
+/* research-use banner strip */
+.research-strip {
+  background: #050506; border-bottom: 1px solid var(--border);
+  color: var(--muted); font-family: 'Space Mono', monospace;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  text-align: center; padding: 7px 12px;
+}
+
+/* ============================================================
+   Hero (front page)
+   ============================================================ */
+.hero {
+  padding: 90px 0 60px;
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(600px 300px at 20% -10%, rgba(139,92,246,0.18), transparent 70%),
+    radial-gradient(500px 260px at 90% 0%, rgba(232,98,42,0.10), transparent 70%);
+}
+.hero h1 { font-size: clamp(34px, 6vw, 58px); margin: 0 0 16px; }
+.hero p.lede { color: var(--muted); font-size: 18px; max-width: 620px; margin: 0 0 28px; }
+.hero .eyebrow {
+  font-family: 'Space Mono', monospace; color: var(--accent);
+  letter-spacing: 0.2em; text-transform: uppercase; font-size: 12px; margin-bottom: 18px;
+}
+
+/* ============================================================
+   Buttons (shared + WooCommerce)
+   ============================================================ */
+.btn,
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+.woocommerce a.button.alt,
+.woocommerce button.button.alt {
+  display: inline-block;
+  background: var(--accent-2);
+  color: #fff !important;
+  border: 1px solid var(--accent);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600; font-size: 14px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 12px 22px; border-radius: var(--r-sm);
+  cursor: pointer; transition: filter .15s, transform .05s;
+  line-height: 1.2;
+}
+.btn:hover,
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover,
+.woocommerce #respond input#submit:hover,
+.woocommerce a.button.alt:hover,
+.woocommerce button.button.alt:hover { filter: brightness(1.12); color: #fff !important; }
+.btn:active { transform: translateY(1px); }
+.btn.ghost {
+  background: transparent; color: var(--text) !important; border-color: var(--border-2);
+}
+.btn.ghost:hover { border-color: var(--accent); }
+
+/* ============================================================
+   WooCommerce — shared containers
+   ============================================================ */
+.woocommerce, .woocommerce-page { color: var(--text); }
+main.site-main { padding: 44px 0 72px; min-height: 50vh; }
+.page-title, .woocommerce-products-header__title {
+  font-size: 30px; margin: 0 0 28px;
+}
+.woocommerce .woocommerce-result-count { color: var(--muted); font-size: 13px; }
+.woocommerce .woocommerce-ordering select {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border-2);
+  border-radius: var(--r-sm); padding: 8px 10px;
+}
+
+/* Product grid */
+.woocommerce ul.products { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px; margin: 0; padding: 0; }
+.woocommerce ul.products li.product {
+  list-style: none; background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 18px; margin: 0; text-align: left;
+  transition: border-color .15s, transform .12s;
+  width: auto !important; float: none !important;
+}
+.woocommerce ul.products li.product:hover { border-color: var(--border-2); transform: translateY(-2px); }
+.woocommerce ul.products li.product a img { border-radius: var(--r-md); margin-bottom: 14px; background: #050506; }
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+  font-size: 17px; color: var(--text); padding: 0; font-weight: 600;
+}
+.woocommerce ul.products li.product .price { color: var(--text) !important; font-size: 16px; display: block; margin: 8px 0 12px; }
+.woocommerce ul.products li.product .price del { color: var(--muted); }
+.woocommerce span.onsale {
+  background: var(--accent-2); color: #fff; border-radius: var(--r-pill, 2px);
+  font-family: 'Space Mono', monospace; min-height: auto; min-width: auto; padding: 4px 10px;
+}
+
+/* Single product */
+.woocommerce div.product .product_title { font-size: 32px; }
+.woocommerce div.product p.price, .woocommerce div.product span.price {
+  color: var(--text); font-size: 24px;
+}
+.woocommerce div.product .woocommerce-product-details__short-description { color: var(--muted); }
+.woocommerce div.product form.cart div.quantity input.qty {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border-2);
+  border-radius: var(--r-sm); padding: 10px; width: 72px;
+}
+.woocommerce .woocommerce-tabs ul.tabs li {
+  background: var(--panel); border-color: var(--border);
+}
+.woocommerce .woocommerce-tabs ul.tabs li.active { background: var(--panel-2); }
+.woocommerce .woocommerce-tabs .panel { color: var(--muted); }
+.woocommerce-product-gallery { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
+.stock.in-stock { color: var(--green); }
+.stock.out-of-stock { color: var(--orange); }
+
+/* Cart + checkout tables/forms */
+.woocommerce table.shop_table,
+.woocommerce-cart table.cart,
+.woocommerce table.shop_table_responsive {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg);
+  border-collapse: separate;
+}
+.woocommerce table.shop_table th { color: var(--text); }
+.woocommerce table.shop_table td { border-top: 1px solid var(--border); color: var(--muted); }
+.woocommerce .cart_totals, .woocommerce-checkout .woocommerce-checkout-review-order {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 6px 18px;
+}
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,
+.select2-container--default .select2-selection--single {
+  background: var(--panel-2) !important; color: var(--text) !important;
+  border: 1px solid var(--border-2) !important; border-radius: var(--r-sm) !important;
+  padding: 11px 12px !important; min-height: 44px;
+}
+.woocommerce form .form-row label { color: var(--text); font-size: 13px; }
+.select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--text); line-height: 44px; }
+.select2-dropdown { background: var(--panel-2); border-color: var(--border-2); color: var(--text); }
+
+/* Payment methods box (offline gateways) */
+#payment, .woocommerce-checkout #payment {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--r-lg);
+}
+#payment ul.payment_methods { border-bottom: 1px solid var(--border); }
+#payment ul.payment_methods li { color: var(--text); }
+#payment div.payment_box { background: rgba(139,92,246,0.08); color: var(--muted); border-radius: var(--r-sm); }
+#payment div.payment_box::before { border-bottom-color: rgba(139,92,246,0.2); }
+
+/* Notices */
+.woocommerce-message, .woocommerce-info, .woocommerce-error, .woocommerce-noreviews {
+  background: var(--panel); color: var(--text);
+  border-top: 3px solid var(--accent); border-radius: var(--r-sm);
+}
+.woocommerce-error { border-top-color: var(--orange); }
+.woocommerce-message { border-top-color: var(--green); }
+.woocommerce-message a, .woocommerce-info a { color: var(--link); }
+
+/* My Account (customer order history / status tracking) */
+.woocommerce-account .woocommerce-MyAccount-navigation ul {
+  list-style: none; padding: 0; border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden;
+}
+.woocommerce-account .woocommerce-MyAccount-navigation li { border-bottom: 1px solid var(--border); }
+.woocommerce-account .woocommerce-MyAccount-navigation li a { display: block; padding: 12px 16px; color: var(--muted); }
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-account .woocommerce-MyAccount-navigation li a:hover { color: var(--text); background: var(--hover-bg); }
+.woocommerce-order .woocommerce-order-details, .woocommerce-order .woocommerce-customer-details { color: var(--muted); }
+
+/* order status pills in account order list */
+.woocommerce-orders-table__cell-order-status { font-family: 'Space Mono', monospace; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  border-top: 1px solid var(--border); background: #050506;
+  color: var(--muted); font-size: 13px; padding: 40px 0;
+}
+.site-footer .cols { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; }
+.site-footer a { color: var(--muted); }
+.site-footer a:hover { color: var(--text); }
+.site-footer .disclaimer {
+  margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--border);
+  font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.05em; line-height: 1.7;
+}
+
+/* ============================================================
+   REDESIGN — marquee, split hero, stat bar, technical catalog cards
+   (rebuilt to match the original static site)
+   ============================================================ */
+
+/* ── Marquee ─────────────────────────────────────────────── */
+.marquee {
+  overflow: hidden; white-space: nowrap; background: #050506;
+  border-bottom: 1px solid var(--border);
+}
+.marquee__track {
+  display: inline-block; padding: 7px 0;
+  animation: vl-marquee 42s linear infinite;
+}
+.marquee__item, .marquee__sep {
+  font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--muted); padding: 0 10px;
+}
+.marquee__sep { color: var(--accent); }
+@keyframes vl-marquee { from { transform: translateX(0); } to { transform: translateX(-33.33%); } }
+@media (prefers-reduced-motion: reduce) { .marquee__track { animation: none; } }
+
+/* ── Hero (split) ────────────────────────────────────────── */
+.hero { padding: 72px 0 64px; }
+.hero__grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; }
+.eyebrow-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border-2); border-radius: 2px;
+  font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--text); padding: 8px 14px; margin-bottom: 26px;
+}
+.eyebrow-pill .diamond { color: var(--accent); }
+.hero__title { font-size: clamp(40px, 6.4vw, 74px); line-height: 1.02; margin: 0 0 22px; font-weight: 600; }
+.hero__title .accent { color: var(--accent); }
+.hero__lede { color: var(--muted); font-size: 17px; max-width: 460px; margin: 0 0 30px; }
+.hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* Hero art: vial trio + corner brackets */
+.hero__art { position: relative; padding: 24px; }
+.vial-trio { display: flex; align-items: flex-end; justify-content: center; gap: 6px; }
+.vial-trio .vial {
+  width: auto; filter: drop-shadow(0 22px 40px rgba(0,0,0,0.6));
+  position: relative;
+}
+.vial-trio .vial--lg { height: 380px; z-index: 2; }
+.vial-trio .vial--sm { height: 300px; margin-bottom: 8px; z-index: 1; }
+/* cap-colored glow behind each vial */
+.hero__art::after {
+  content: ""; position: absolute; inset: 10% 8% 8%;
+  background:
+    radial-gradient(closest-side, rgba(139,92,246,0.22), transparent 72%);
+  filter: blur(10px); z-index: 0; pointer-events: none;
+}
+.bracket { position: absolute; width: 34px; height: 34px; z-index: 3; }
+.bracket--tl { top: 0; left: 0; border-top: 2px solid var(--border-2); border-left: 2px solid var(--border-2); }
+.bracket--br { bottom: 0; right: 0; border-bottom: 2px solid var(--border-2); border-right: 2px solid var(--border-2); }
+
+/* ── Stat bar ────────────────────────────────────────────── */
+.statbar { background: #050506; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.statbar__grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.stat { padding: 26px 24px; border-left: 1px solid var(--border); }
+.stat:first-child { border-left: 0; padding-left: 0; }
+.stat__num { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+.stat__num.accent { color: var(--accent); }
+.stat__label {
+  font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted); margin-top: 6px;
+}
+
+/* ── Catalog header ──────────────────────────────────────── */
+.catalog-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin: 6px 0 30px; }
+.section-eyebrow {
+  font-family: 'Space Mono', monospace; color: var(--accent);
+  letter-spacing: 0.2em; text-transform: uppercase; font-size: 12px; margin-bottom: 10px;
+}
+.section-title { font-size: clamp(30px, 4vw, 44px); margin: 0; }
+.catalog-note {
+  font-family: 'Space Mono', monospace; font-size: 12px; line-height: 1.7;
+  color: var(--muted); max-width: 260px; text-align: right; margin: 0;
+}
+
+/* ── Technical product cards (vl-card) ───────────────────── */
+.woocommerce ul.products { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+/* WooCommerce adds clearfix ::before/::after which become phantom grid cells
+   and shove the products out of alignment — neutralize them. */
+.woocommerce ul.products::before,
+.woocommerce ul.products::after { content: none !important; display: none !important; }
+.woocommerce ul.products li.product.vl-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 0; overflow: hidden; display: flex; flex-direction: column;
+}
+.woocommerce ul.products li.product.vl-card:hover { border-color: var(--cap, var(--border-2)); }
+.vl-card__media {
+  display: flex; align-items: center; justify-content: center;
+  height: 240px; padding: 22px; position: relative;
+  background:
+    radial-gradient(closest-side at 50% 55%, color-mix(in srgb, var(--cap) 26%, transparent), transparent 72%),
+    #0a0a0e;
+}
+.vl-card__media .vl-vial,
+.vl-card__media img {
+  height: 100% !important; width: auto !important; max-width: 100%;
+  object-fit: contain; margin: 0 !important; border-radius: 0; background: transparent;
+  filter: drop-shadow(0 14px 24px rgba(0,0,0,0.55));
+}
+.vl-card__body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.vl-card__titlerow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vl-card__title { font-size: 18px; margin: 0; font-weight: 600; }
+.vl-card__title a { color: var(--text); }
+.dose-badge {
+  font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
+  color: var(--text); border: 1px solid var(--border-2); border-radius: 2px;
+  padding: 3px 8px; white-space: nowrap;
+}
+.vl-card__sub { color: var(--muted); font-size: 13px; margin: 0; }
+.vl-card__meta {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 12px; color: var(--muted); letter-spacing: 0.04em;
+  padding-top: 6px; border-top: 1px solid var(--border);
+}
+.vl-stock { color: var(--muted); }
+.vl-card__buy { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 6px; }
+.vl-price, .vl-card .vl-price .woocommerce-Price-amount {
+  font-family: 'Space Mono', monospace; font-size: 20px; color: var(--text); font-weight: 700;
+}
+.vl-add { display: flex; gap: 8px; margin: 0; }
+.vl-add select {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border-2);
+  border-radius: var(--r-sm); padding: 8px 6px; font-family: 'Space Mono', monospace; font-size: 13px;
+}
+.vl-add__btn { padding: 9px 14px; font-size: 12px; }
+.vl-soldout { color: var(--orange); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero__grid { grid-template-columns: 1fr; }
+  .hero__art { order: -1; }
+  .vial-trio .vial--lg { height: 280px; }
+  .vial-trio .vial--sm { height: 220px; }
+  .statbar__grid { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(3) { border-left: 0; }
+  .woocommerce ul.products { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .site-header .bar { height: 56px; gap: 14px; }
+  .main-nav { display: none; }
+  .hero { padding: 44px 0 36px; }
+  .catalog-head { flex-direction: column; align-items: flex-start; }
+  .catalog-note { text-align: left; }
+}

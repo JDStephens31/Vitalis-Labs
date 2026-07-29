@@ -1,0 +1,88 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: vitalis-db
+    restart: unless-stopped
+    # Use the legacy auth plugin so the wp-cli image's MariaDB client can also
+    # talk to the DB (MySQL 8 defaults to caching_sha2_password, which that
+    # client can't load). WordPress itself works either way.
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+      MYSQL_USER: ${WORDPRESS_DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wordpress}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    container_name: vitalis-wp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wordpress}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_DEBUG', true);
+        define('WP_DEBUG_LOG', true);
+        define('WP_DEBUG_DISPLAY', false);
+        define('VITALIS_SMTP_HOST', '${VITALIS_SMTP_HOST:-mailpit}');
+        define('VITALIS_SMTP_PORT', ${VITALIS_SMTP_PORT:-1025});
+        define('VITALIS_SMTP_USER', '${VITALIS_SMTP_USER:-}');
+        define('VITALIS_SMTP_PASS', '${VITALIS_SMTP_PASS:-}');
+        define('VITALIS_SMTP_SECURE', '${VITALIS_SMTP_SECURE:-}');
+        define('VITALIS_MAIL_FROM', '${VITALIS_MAIL_FROM:-orders@vitalislabs.test}');
+        define('VITALIS_MAIL_FROM_NAME', '${VITALIS_MAIL_FROM_NAME:-Vitalis Labs}');
+    volumes:
+      # WordPress core lives in the image; we only persist wp-content so your
+      # custom theme, uploaded images, plugins, and media survive rebuilds.
+      - wp_core:/var/www/html
+      - ./wordpress/wp-content/themes/vitalis:/var/www/html/wp-content/themes/vitalis
+
+  # Local mail catcher. WordPress has no MTA in Docker, so order emails would
+  # silently fail to send. Everything the site sends lands here instead of the
+  # internet — open http://localhost:8025 to read it. For production, point the
+  # VITALIS_SMTP_* vars in .env at a real SMTP provider and drop this service.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: vitalis-mail
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # web UI (SMTP on 1025 stays internal to the compose network)
+
+  # One-shot automation container. It waits for WordPress, installs the core
+  # site, WooCommerce, activates the Vitalis theme, configures the offline
+  # payment gateways, and seeds the catalog. Runs via the setup script.
+  wpcli:
+    image: wordpress:cli-php8.3
+    container_name: vitalis-cli
+    depends_on:
+      - wordpress
+    user: "33:33"
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-wordpress}
+    volumes:
+      - wp_core:/var/www/html
+      - ./wordpress/wp-content/themes/vitalis:/var/www/html/wp-content/themes/vitalis
+      - ./docker/setup.sh:/setup.sh:ro
+      - ./assets:/seed-assets:ro
+
+volumes:
+  db_data:
+  wp_core:

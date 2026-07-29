@@ -119,51 +119,78 @@
 </helmet>
 <div style="--accent: {{ accent }}; --spot: {{ spot }}; position: relative; min-height: 100vh; overflow-x: hidden; background: var(--bg);">
 
-  <!-- ENTRY AUTH GATE (Log in / Sign up) -->
+  <!-- SITE ENTRY GATE — referral password + 21+ / RUO disclaimer. Nothing on the
+       site is reachable until this is passed (verified server-side by
+       verify_referral_password; see dont-push/supabase-referral-gate.sql). -->
   <sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
-    <div style="position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease; overflow-y: auto;">
-      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6); margin: auto;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
+    <div style="position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.96); backdrop-filter: blur(14px); animation: vl-fadein .3s ease; overflow-y: auto;">
+      <div style="width: 100%; max-width: 420px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6); margin: auto;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
           <div style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-5); display: flex; align-items: center; justify-content: center;"><div style="width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--accent, #8b5cf6) 85%, white);"></div></div>
           <span style="font-weight: 600; font-size: 15px; letter-spacing: 0.16em;">VITALIS LABS</span>
         </div>
 
+        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Private access</h2>
+        <p style="margin: 0 0 22px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">This site is invite-only. Enter the password you were given to continue.</p>
+
+        <input value="{{ entryPassword }}" onChange="{{ setEntryPassword }}" onKeyDown="{{ entryKey }}" type="password" autoComplete="off" placeholder="Site password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+
+        <sc-if value="{{ entryError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 10px; line-height: 1.5;">{{ entryError }}</div></sc-if>
+
+        <!-- Age + research-use disclaimer. Required before entry. -->
+        <label style="display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; padding: 14px 15px; background: var(--bg); border: 1px solid var(--line-1); border-radius: var(--r-sm); font-size: 12.5px; line-height: 1.55; color: var(--text-4); cursor: pointer;">
+          <input type="checkbox" checked="{{ entryDisclaimer }}" onChange="{{ setEntryDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
+          <span>I confirm I am <strong style="color: var(--text-2);">21 years of age or older</strong>, and I understand these products are <strong style="color: var(--text-2);">not for human consumption</strong> and are sold strictly for laboratory research use only.</span>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; color: var(--text-4); cursor: pointer;">
+          <input type="checkbox" checked="{{ entryRemember }}" onChange="{{ setEntryRemember }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
+          Remember me on this device
+        </label>
+
+        <button onClick="{{ submitEntry }}" disabled="{{ entryBusy }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ entryLabel }}</button>
+        <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 18px; text-align: center;">RESEARCH USE ONLY — NOT FOR HUMAN CONSUMPTION</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ACCOUNT MODAL (Log in / Sign up) — opened from the nav or at checkout.
+       Browsing is open once the site password is entered; an account is only
+       required to place an order (RLS ties every order to the account). -->
+  <sc-if value="{{ authOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 250; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.9); backdrop-filter: blur(10px); animation: vl-fadein .22s ease; overflow-y: auto;">
+      <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 30px 30px 26px; box-shadow: 0 40px 90px rgba(0,0,0,0.6); margin: auto; position: relative;">
+        <span onClick="{{ closeAuth }}" style="position: absolute; top: 14px; right: 16px; cursor: pointer; font-size: 18px; line-height: 1; color: var(--text-7); padding: 4px;" style-hover="color: var(--text);">×</span>
+
         <!-- Log in / Sign up toggle -->
-        <div style="display: flex; gap: 6px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px; margin-bottom: 22px;">
+        <div style="display: flex; gap: 6px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px; margin: 6px 0 22px;">
           <span onClick="{{ switchToLogin }}" style="flex: 1; text-align: center; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; padding: 9px 0; border-radius: var(--r-xs); color: {{ loginTabColor }}; background: {{ loginTabBg }};">LOG IN</span>
           <span onClick="{{ switchToSignup }}" style="flex: 1; text-align: center; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.14em; padding: 9px 0; border-radius: var(--r-xs); color: {{ signupTabColor }}; background: {{ signupTabBg }};">SIGN UP</span>
         </div>
 
         <sc-if value="{{ authIsSignup }}" hint-placeholder-val="{{ false }}">
-          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Create your account</h2>
-          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Accounts are invite-only. Enter the referral password you were given, then create your login.</p>
+          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 23px; letter-spacing: -0.01em;">Create your account</h2>
+          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">An account keeps your shipping details on file and lets you track every order you place.</p>
         </sc-if>
         <sc-if value="{{ authIsLogin }}" hint-placeholder-val="{{ true }}">
-          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 24px; letter-spacing: -0.01em;">Welcome back</h2>
-          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Log in to browse the catalog and place an order.</p>
+          <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 23px; letter-spacing: -0.01em;">Welcome back</h2>
+          <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">Log in to place an order and see your order history.</p>
         </sc-if>
 
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <input value="{{ authEmail }}" onChange="{{ setAuthEmail }}" onKeyDown="{{ authKey }}" type="email" placeholder="Email address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
-          <input value="{{ authPassword }}" onChange="{{ setAuthPassword }}" onKeyDown="{{ authKey }}" type="password" placeholder="Password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
-          <sc-if value="{{ authIsSignup }}" hint-placeholder-val="{{ false }}">
-            <input value="{{ gatePassword }}" onChange="{{ setGatePassword }}" onKeyDown="{{ authKey }}" type="password" placeholder="Referral password (invite)" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
-          </sc-if>
+          <input value="{{ authEmail }}" onChange="{{ setAuthEmail }}" onKeyDown="{{ authKey }}" type="email" autoComplete="email" placeholder="Email address" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+          <input value="{{ authPassword }}" onChange="{{ setAuthPassword }}" onKeyDown="{{ authKey }}" type="password" autoComplete="{{ authPasswordAutocomplete }}" placeholder="{{ authPasswordPlaceholder }}" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
         </div>
 
-        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 10px;">{{ authError }}</div></sc-if>
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 10px; line-height: 1.5;">{{ authError }}</div></sc-if>
         <sc-if value="{{ authNotice }}" hint-placeholder-val="{{ false }}"><div style="color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); font-size: 12px; margin-top: 10px; line-height: 1.5;">{{ authNotice }}</div></sc-if>
 
-        <label style="display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 12.5px; line-height: 1.5; color: var(--text-4); cursor: pointer;">
-          <input type="checkbox" checked="{{ gateDisclaimer }}" onChange="{{ setGateDisclaimer }}" style="margin-top: 2px; accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px; flex-shrink: 0;">
-          I am at least 21 years of age or older, and I understand these products are not for human consumption and are for research purposes only.
-        </label>
-        <label style="display: flex; align-items: center; gap: 9px; margin-top: 14px; font-size: 13px; color: var(--text-4); cursor: pointer;">
+        <label style="display: flex; align-items: center; gap: 9px; margin-top: 16px; font-size: 13px; color: var(--text-4); cursor: pointer;">
           <input type="checkbox" checked="{{ rememberMe }}" onChange="{{ setRememberMe }}" style="accent-color: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); width: 15px; height: 15px;">
-          Remember me on this device
+          Keep me signed in on this device
         </label>
-        <button onClick="{{ submitAuth }}" disabled="{{ authBusy }}" style="width: 100%; margin-top: 22px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ authSubmitLabel }}</button>
-        <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 18px; text-align: center;">RESEARCH USE ONLY</div>
+        <button onClick="{{ submitAuth }}" disabled="{{ authBusy }}" style="width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; transition: transform .15s;" style-hover="transform: translateY(-1px);">{{ authSubmitLabel }}</button>
+        <div style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em; color: var(--text-9); margin-top: 16px; text-align: center;">RESEARCH USE ONLY</div>
       </div>
     </div>
   </sc-if>
@@ -201,6 +228,9 @@
           <span onClick="{{ goOrders }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">MY ORDERS</span>
           <span onClick="{{ goAccount }}" style="cursor: pointer; transition: color .2s;" style-hover="color: var(--text);">PROFILE</span>
         </sc-if>
+        <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}">
+          <span onClick="{{ openLogin }}" style="cursor: pointer; transition: color .2s; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white);" style-hover="color: var(--text);">LOG IN / SIGN UP</span>
+        </sc-if>
       </div>
       <div style="display: flex; align-items: center; gap: 16px;">
         <sc-if value="{{ isAuthed }}" hint-placeholder-val="{{ true }}">
@@ -235,6 +265,9 @@
             <span onClick="{{ mOrders }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer;">MY ORDERS</span>
             <span onClick="{{ mAccount }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer;">PROFILE</span>
             <span onClick="{{ mLogout }}" title="{{ userEmail }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer; color: var(--text-6);">LOG OUT</span>
+          </sc-if>
+          <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}">
+            <span onClick="{{ mLogin }}" style="padding: 14px 2px; border-top: 1px solid var(--line-1); cursor: pointer; color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white);">LOG IN / SIGN UP</span>
           </sc-if>
         </div>
       </div>
@@ -591,8 +624,8 @@
         <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">Occasionally, yes. In the off chance an order can't be filled, a full refund is given (Venmo fees are not reimbursed).</p>
       </div>
       <div style="background: var(--bg-2); padding: 26px 28px;">
-        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Why do I need a referral password?</h3>
-        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">The catalog is available to referred researchers. Enter the password you were given to browse and order. If you don't have one, check with the person who referred you.</p>
+        <h3 style="margin: 0 0 10px; font-size: 16.5px; font-weight: 500;">Why do I need a site password?</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-6);">The catalog is available to referred researchers only. The password you were given unlocks the site, and you'll enter it once more to confirm each order. If you don't have one, check with the person who referred you.</p>
       </div>
     </div>
   </section>
@@ -930,6 +963,14 @@
             <div style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--text-8); margin-bottom: 8px;">TAXES INCLUDED</div>
             <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-6); margin-bottom: 10px;"><span>Cold-chain shipping</span><span style="color: var(--text);">{{ shippingLabel }}</span></div>
             <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; margin-bottom: 16px; padding-top: 10px; border-top: 1px solid var(--line-1);"><span>Total</span><span>{{ totalLabel }}</span></div>
+            <!-- Ordering requires an account: every order is tied to the signed-in
+                 user (RLS), which is what powers MY ORDERS. -->
+            <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ openLogin }}" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 11px 13px; background: var(--bg); border: 1px solid var(--line-2); border-radius: var(--r-sm); cursor: pointer; font-size: 12px; line-height: 1.5; color: var(--text-5);" style-hover="border-color: var(--line-4);">
+                <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 75%, white); font-size: 12px;">◆</span>
+                <span>You'll need an account to place an order — <span style="color: color-mix(in oklab, var(--accent, #8b5cf6) 72%, white);">log in or sign up</span>.</span>
+              </div>
+            </sc-if>
             <sc-if value="{{ submitError }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; line-height: 1.5; color: #e8622a; margin-bottom: 12px;">{{ submitError }}</div></sc-if>
             <button onClick="{{ placeOrder }}" disabled="{{ submitting }}" style="width: 100%; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer; margin-bottom: 10px;">{{ placeOrderLabel }}</button>
             <button onClick="{{ backToCart }}" style="width: 100%; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text-6); background: transparent; border: none; padding: 6px; cursor: pointer;">← BACK TO CART</button>
@@ -944,9 +985,9 @@
     <div style="position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(6,6,8,0.92); backdrop-filter: blur(10px); animation: vl-fadein .3s ease;">
       <div style="width: 100%; max-width: 400px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-lg); padding: 32px 30px; box-shadow: 0 40px 90px rgba(0,0,0,0.6);">
         <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white); margin-bottom: 10px;">CONFIRM ORDER</div>
-        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 23px; letter-spacing: -0.01em;">Enter referral password</h2>
-        <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">For security, your referral password is required to place each order.</p>
-        <input value="{{ orderGatePassword }}" onChange="{{ setOrderGatePassword }}" onKeyDown="{{ orderGateKey }}" type="password" placeholder="Referral password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
+        <h2 style="margin: 0 0 8px; font-weight: 300; font-size: 23px; letter-spacing: -0.01em;">Enter your site password</h2>
+        <p style="margin: 0 0 20px; font-size: 13.5px; line-height: 1.6; color: var(--text-6);">For security, the same password you used to enter the site is required to place each order.</p>
+        <input value="{{ orderGatePassword }}" onChange="{{ setOrderGatePassword }}" onKeyDown="{{ orderGateKey }}" type="password" autoComplete="off" placeholder="Site password" style="width: 100%; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 13px 14px; border-radius: var(--r-sm); outline: none;" style-focus="border-color: color-mix(in oklab, var(--accent, #8b5cf6) 70%, white);">
         <sc-if value="{{ orderGateError }}" hint-placeholder-val="{{ false }}"><div style="color: #e8622a; font-size: 12px; margin-top: 9px;">{{ orderGateError }}</div></sc-if>
         <button onClick="{{ confirmOrderGate }}" disabled="{{ orderGateBusy }}" style="width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; color: #0b0b0f; background: color-mix(in oklab, var(--accent, #8b5cf6) 88%, white); border: none; padding: 14px; border-radius: var(--r-sm); cursor: pointer;">{{ orderGateLabel }}</button>
         <button onClick="{{ closeOrderGate }}" style="width: 100%; margin-top: 8px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--text-6); background: transparent; border: none; padding: 8px; cursor: pointer;">CANCEL</button>
@@ -980,14 +1021,19 @@ class Component extends DCLogic {
   CART_KEY = 'vitalis_cart';
   ORDERS_KEY = 'vitalis_orders';
   // Auth. Customers sign in with Supabase Auth (GoTrue). The session (JWT +
-  // refresh token) is mirrored to localStorage under SESSION_KEY; REMEMBER_KEY
-  // records the "remember me" choice. On entry we only auto-restore a session
-  // when remember me is on — otherwise the user logs in again.
+  // refresh token) and the site-entry unlock are both persisted in a tier chosen
+  // by "remember me":
+  //   remember on  → localStorage  (survives closing the browser)
+  //   remember off → sessionStorage (survives a refresh, dies with the tab)
+  // Using sessionStorage rather than wiping on unload means a mid-checkout
+  // refresh no longer silently logs you out.
   SESSION_KEY = 'vitalis_session';
   REMEMBER_KEY = 'vitalis_remember';
-  // Referral password. NOT in this file — stored as a bcrypt hash in Supabase and
-  // checked server-side via verify_referral_password (see supabase-referral-gate.sql).
-  // It now gates account signup (the invite) and is required again on every checkout.
+  GATE_KEY = 'vitalis_gate';
+  // Site password. NOT in this file — stored only as a bcrypt hash in Supabase
+  // (public.referral_gate) and checked server-side by verify_referral_password
+  // (see dont-push/supabase-referral-gate.sql). The same password gates entry to
+  // the site and is required again to place each order.
   // ────────────────────────────────────────────────────────────────────────
 
   emptyForm = { fullName: '', email: '', phone: '', address: '', city: '', state: '', zip: '', referral: '' };
@@ -995,18 +1041,24 @@ class Component extends DCLogic {
   emptyProfileForm = { email: '', full_name: '', phone: '', address: '', city: '', state: '', zip: '' };
 
   state = {
-    // ── auth (entry gate is now Log in / Sign up) ──
+    // ── site entry gate (password + 21+/RUO disclaimer, before anything else) ──
+    gateUnlocked: this.loadGate(),
+    entryPassword: '',
+    entryDisclaimer: false,
+    entryRemember: this.isRemembered(),
+    entryError: null,
+    entryBusy: false,
+    // ── accounts (login/signup modal — required only to place an order) ──
     session: null,          // { access_token, refresh_token, expires_at, user:{id,email} }
-    authed: false,          // true once signed in — hides the entry overlay
+    authed: false,          // true once signed in
+    authOpen: false,        // login/signup modal visibility
     authMode: 'login',      // 'login' | 'signup'
     auth: { email: '', password: '' },
     authError: null,
     authNotice: null,
     authBusy: false,
-    rememberMe: false,      // "remember me on this device" — stored on the profile row too
-    gatePassword: '',       // referral invite password (signup) — bcrypt-checked server-side
-    gateDisclaimer: false,  // 21+ / research-use confirmation on the entry screen
-    // ── checkout referral gate (required before every order) ──
+    rememberMe: this.isRemembered(),  // also mirrored onto the profile row
+    // ── checkout password gate (required before every order) ──
     orderGateOpen: false,
     orderGatePassword: '',
     orderGateError: null,
@@ -1042,18 +1094,9 @@ class Component extends DCLogic {
     this.applyTheme(this.state.theme);
     this.loadProducts();
     this.loadSession();
-    // If "remember me" is off, drop the stored session when the tab closes so a
-    // fresh entry always re-prompts for login.
-    const self = this;
-    try {
-      window.addEventListener('beforeunload', function () {
-        try {
-          if (window.localStorage.getItem(self.REMEMBER_KEY) !== '1') {
-            window.localStorage.removeItem(self.SESSION_KEY);
-          }
-        } catch (e) {}
-      });
-    } catch (e) {}
+    // No unload cleanup needed: when "remember me" is off both the session and
+    // the entry unlock live in sessionStorage, which the browser clears when the
+    // tab closes.
   }
 
   // ─── Theme (dark default + light) ───────────────────────────────────────────
@@ -1083,12 +1126,55 @@ class Component extends DCLogic {
     try { window.localStorage.setItem(this.CART_KEY, JSON.stringify(cart)); } catch (e) {}
   }
 
-  // ─── Auth: entry-screen field setters ───────────────────────────────────
+  // ─── Site entry gate (password + 21+ / research-use disclaimer) ─────────
+  setEntryPassword(v) { this.setState({ entryPassword: v, entryError: null }); }
+  setEntryDisclaimer(v) { this.setState({ entryDisclaimer: !!v, entryError: null }); }
+  setEntryRemember(v) { this.setState({ entryRemember: !!v }); }
+
+  submitEntry() {
+    const self = this;
+    if (this.state.entryBusy) return;
+    const candidate = this.state.entryPassword || '';
+    if (!candidate) { this.setState({ entryError: 'Enter the site password to continue.' }); return; }
+    if (!this.state.entryDisclaimer) { this.setState({ entryError: 'Please confirm you are 21 or older and that these are not for human consumption.' }); return; }
+    this.setState({ entryBusy: true, entryError: null });
+    // Checked server-side — the hash never leaves the database, and a wrong
+    // password can't be brute-forced from the page source.
+    this.verifyReferral(candidate).then(function (ok) {
+      if (!ok) { self.setState({ entryBusy: false, entryError: 'Incorrect password — please check with your referrer.' }); return; }
+      const remember = self.state.entryRemember;
+      self.setRemembered(remember);
+      self.storeGate(remember);
+      self.setState({ entryBusy: false, gateUnlocked: true, entryPassword: '', entryError: null, rememberMe: remember });
+    }).catch(function () {
+      self.setState({ entryBusy: false, entryError: 'Could not verify right now — please try again.' });
+    });
+  }
+
+  // ─── Auth: modal + field setters ────────────────────────────────────────
+  openAuth(mode, notice) { this.setState({ authOpen: true, authMode: mode || 'login', authError: null, authNotice: notice || null }); }
+  closeAuth() { this.setState({ authOpen: false, authError: null, authNotice: null, auth: Object.assign({}, this.emptyAuth) }); }
   setAuthField(k, v) { this.setState(function (s) { const a = Object.assign({}, s.auth); a[k] = v; return { auth: a, authError: null }; }); }
   setAuthMode(m) { this.setState({ authMode: m, authError: null, authNotice: null }); }
   setRememberMe(v) { this.setState({ rememberMe: !!v }); }
-  setGatePassword(v) { this.setState({ gatePassword: v, authError: null }); }
-  setGateDisclaimer(v) { this.setState({ gateDisclaimer: !!v, authError: null }); }
+
+  // ─── Storage tiering: localStorage when remembered, else sessionStorage ──
+  readAny(key) {
+    try { return window.localStorage.getItem(key) || window.sessionStorage.getItem(key); } catch (e) { return null; }
+  }
+  writeTiered(key, value, remember) {
+    // Always clear both tiers first so a value can never linger in the wrong one
+    // (e.g. remembering, then later un-remembering, on the same device).
+    try {
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+      if (value != null) (remember ? window.localStorage : window.sessionStorage).setItem(key, value);
+    } catch (e) {}
+  }
+  isRemembered() { try { return window.localStorage.getItem(this.REMEMBER_KEY) === '1'; } catch (e) { return false; } }
+  setRemembered(v) { try { window.localStorage.setItem(this.REMEMBER_KEY, v ? '1' : '0'); } catch (e) {} }
+  loadGate() { return this.readAny(this.GATE_KEY) === '1'; }
+  storeGate(remember) { this.writeTiered(this.GATE_KEY, '1', remember); }
 
   // ─── Auth: session helpers ──────────────────────────────────────────────
   // Normalise a GoTrue token/signup response into our stored session shape.
@@ -1103,36 +1189,30 @@ class Component extends DCLogic {
     };
   }
   loadStoredSession() {
-    try { const raw = window.localStorage.getItem(this.SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+    try { const raw = this.readAny(this.SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   }
   storeSession(session, remember) {
-    try {
-      if (session) window.localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-      else window.localStorage.removeItem(this.SESSION_KEY);
-      window.localStorage.setItem(this.REMEMBER_KEY, remember ? '1' : '0');
-    } catch (e) {}
+    this.writeTiered(this.SESSION_KEY, session ? JSON.stringify(session) : null, remember);
+    this.setRemembered(remember);
   }
   sessionValid(s) { return !!(s && s.access_token && s.expires_at && (s.expires_at * 1000) > Date.now()); }
-  isRemembered() { try { return window.localStorage.getItem(this.REMEMBER_KEY) === '1'; } catch (e) { return false; } }
 
-  // On entry: only auto-restore a session when "remember me" is on. Otherwise the
-  // user must log in again (matching the requested "password on entry" behaviour).
+  // Restore whatever session is stored. The storage tier already encodes the
+  // "remember me" choice: an unremembered session only lives in sessionStorage,
+  // so it's gone on the next visit but survives a refresh.
   loadSession() {
     const self = this;
     const remember = this.isRemembered();
     const s = this.loadStoredSession();
-    if (!remember || !s) {
-      if (!remember) { try { window.localStorage.removeItem(this.SESSION_KEY); } catch (e) {} }
-      return;
-    }
+    if (!s) return;
     if (this.sessionValid(s)) {
-      this.setState({ session: s, authed: true, rememberMe: true });
+      this.setState({ session: s, authed: true, rememberMe: remember });
       this.afterAuth(s);
       return;
     }
     if (s.refresh_token) {
       this.refreshSession(s.refresh_token).then(function (ns) {
-        if (ns) { self.setState({ session: ns, authed: true, rememberMe: true }); self.afterAuth(ns); }
+        if (ns) { self.setState({ session: ns, authed: true, rememberMe: remember }); self.afterAuth(ns); }
       });
     }
   }
@@ -1154,7 +1234,6 @@ class Component extends DCLogic {
     const email = (this.state.auth.email || '').trim();
     const password = this.state.auth.password || '';
     if (!email || !password) { this.setState({ authError: 'Enter your email and password.' }); return; }
-    if (!this.state.gateDisclaimer) { this.setState({ authError: 'Please confirm you are 21+ and agree these are for research use only.' }); return; }
     this.setState({ authBusy: true, authError: null, authNotice: null });
     fetch(this.SUPABASE_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST',
@@ -1162,11 +1241,11 @@ class Component extends DCLogic {
       body: JSON.stringify({ email: email, password: password }),
     }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        if (!res.ok) throw new Error(res.j.error_description || res.j.msg || res.j.error || 'Invalid email or password.');
+        if (!res.ok) throw new Error(self.authMessage(res.j, 'Invalid email or password.'));
         const session = self.sessionFrom(res.j);
         const remember = self.state.rememberMe;
         self.storeSession(session, remember);
-        self.setState({ authed: true, session: session, authBusy: false, auth: Object.assign({}, self.emptyAuth), authError: null });
+        self.setState({ authed: true, session: session, authBusy: false, authOpen: false, auth: Object.assign({}, self.emptyAuth), authError: null, authNotice: null });
         self.persistRemember(remember, session);
         self.afterAuth(session);
       }).catch(function (e) {
@@ -1174,42 +1253,53 @@ class Component extends DCLogic {
       });
   }
 
-  // ─── Auth: sign up (referral password is the invite) ────────────────────
+  // Turn a GoTrue error body into something a customer can act on.
+  authMessage(j, fallback) {
+    j = j || {};
+    const code = j.error_code || j.code || '';
+    if (code === 'invalid_credentials') return 'That email and password don\'t match an account. If you haven\'t signed up yet, use SIGN UP above.';
+    if (code === 'email_not_confirmed') return 'Please confirm your email address first — check your inbox for the confirmation link.';
+    if (code === 'user_already_exists' || code === 'email_exists') return 'An account already exists for that email — use LOG IN instead.';
+    if (code === 'weak_password') return 'Please choose a stronger password (at least 6 characters).';
+    if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit') return 'Too many attempts — please wait a minute and try again.';
+    return j.error_description || j.msg || j.message || j.error || fallback;
+  }
+
+  // ─── Auth: sign up ──────────────────────────────────────────────────────
+  // The invite is already enforced by the site entry gate above, so signup only
+  // needs an email + password here. Ordering is still gated a second time by the
+  // password prompt at checkout, and RLS is the hard boundary on the data.
   signup() {
     const self = this;
     if (this.state.authBusy) return;
     const email = (this.state.auth.email || '').trim();
     const password = this.state.auth.password || '';
-    const invite = this.state.gatePassword || '';
     if (!email || !password) { this.setState({ authError: 'Enter your email and a password.' }); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.setState({ authError: 'Enter a valid email address.' }); return; }
     if (password.length < 6) { this.setState({ authError: 'Password must be at least 6 characters.' }); return; }
-    if (!this.state.gateDisclaimer) { this.setState({ authError: 'Please confirm you are 21+ and agree these are for research use only.' }); return; }
     this.setState({ authBusy: true, authError: null, authNotice: null });
-    this.verifyReferral(invite).then(function (ok) {
-      if (!ok) { self.setState({ authBusy: false, authError: 'Incorrect referral password — please check with your referrer.' }); return; }
-      return fetch(self.SUPABASE_URL + '/auth/v1/signup', {
-        method: 'POST',
-        headers: { 'apikey': self.SUPABASE_ANON, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password }),
-      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-        .then(function (res) {
-          if (!res.ok) throw new Error(res.j.error_description || res.j.msg || res.j.error || 'Could not create account.');
-          if (res.j.access_token) {
-            // Email confirmation off → we get a session immediately.
-            const session = self.sessionFrom(res.j);
-            const remember = self.state.rememberMe;
-            self.storeSession(session, remember);
-            self.setState({ authed: true, session: session, authBusy: false, auth: Object.assign({}, self.emptyAuth), gatePassword: '', authError: null });
-            self.persistRemember(remember, session);
-            self.afterAuth(session);
-          } else {
-            // Email confirmation on → tell them to confirm, then log in.
-            self.setState({ authBusy: false, authMode: 'login', gatePassword: '', authError: null, authNotice: 'Account created. If email confirmation is enabled, check your inbox to confirm, then log in.' });
-          }
-        });
-    }).catch(function (e) {
-      self.setState({ authBusy: false, authError: (e && e.message) ? e.message : 'Could not create account.' });
-    });
+    fetch(self.SUPABASE_URL + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { 'apikey': self.SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password }),
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(self.authMessage(res.j, 'Could not create account.'));
+        if (res.j.access_token) {
+          // Email confirmation off → we get a session immediately.
+          const session = self.sessionFrom(res.j);
+          const remember = self.state.rememberMe;
+          self.storeSession(session, remember);
+          self.setState({ authed: true, session: session, authBusy: false, authOpen: false, auth: Object.assign({}, self.emptyAuth), authError: null, authNotice: null });
+          self.persistRemember(remember, session);
+          self.afterAuth(session);
+        } else {
+          // Email confirmation on → tell them to confirm, then log in.
+          self.setState({ authBusy: false, authMode: 'login', authError: null, authNotice: 'Account created. Check your inbox to confirm your email, then log in.' });
+        }
+      }).catch(function (e) {
+        self.setState({ authBusy: false, authError: (e && e.message) ? e.message : 'Could not create account.' });
+      });
   }
 
   // ─── Auth: refresh / logout / authed fetch ──────────────────────────────
@@ -1238,8 +1328,11 @@ class Component extends DCLogic {
         }).catch(function () {});
       }
     } catch (e) {}
-    try { window.localStorage.removeItem(this.SESSION_KEY); window.localStorage.setItem(this.REMEMBER_KEY, '0'); } catch (e) {}
-    this.setState({ authed: false, session: null, profile: null, myOrders: null, page: 'home', view: 'cart', cartOpen: false, auth: Object.assign({}, this.emptyAuth), gatePassword: '', gateDisclaimer: false, rememberMe: false });
+    // Drop the session from both tiers. The site-entry unlock is deliberately
+    // left intact — logging out of an account isn't the same as leaving the site.
+    this.writeTiered(this.SESSION_KEY, null, false);
+    this.setRemembered(false);
+    this.setState({ authed: false, session: null, profile: null, myOrders: null, page: 'home', view: 'cart', cartOpen: false, authOpen: false, auth: Object.assign({}, this.emptyAuth), rememberMe: false });
   }
   // fetch() against Supabase with the user's bearer token; refreshes once on 401.
   // `session` is passed explicitly by callers acting right after login/refresh, since
@@ -1531,7 +1624,13 @@ class Component extends DCLogic {
     if (this.state.submitting) return;
     const v = this.validate();
     if (!v.valid) { this.setState({ submitError: 'Please complete the highlighted fields.', attempted: true }); return; }
-    if (!this.state.authed || !this.state.session) { this.setState({ submitError: 'Please log in before placing an order.' }); return; }
+    // Ordering requires an account — open the login/signup modal instead of
+    // dead-ending on an error message.
+    if (!this.state.authed || !this.state.session) {
+      this.openAuth('login', 'Log in or create an account to place your order — it\'s how you\'ll track it afterwards.');
+      this.setState({ submitError: null });
+      return;
+    }
     this.setState({ orderGateOpen: true, orderGatePassword: '', orderGateError: null, submitError: null });
   }
 
@@ -1754,6 +1853,7 @@ class Component extends DCLogic {
       mOrders: function () { self.closeMobileMenu(); self.goOrders(); },
       mAccount: function () { self.closeMobileMenu(); self.goAccount(); },
       mLogout: function () { self.closeMobileMenu(); self.logout(); },
+      mLogin: function () { self.closeMobileMenu(); self.openAuth('login'); },
 
       // support pages
       isHome: this.state.page === 'home',
@@ -1804,8 +1904,24 @@ class Component extends DCLogic {
       themeLabel: this.state.theme === 'light' ? 'DARK' : 'LIGHT',
       toggleTheme: function () { self.toggleTheme(); },
 
-      // ─── entry auth screen (Log in / Sign up) ───
-      locked: !this.state.authed,
+      // ─── site entry gate (password + 21+ / RUO disclaimer) ───
+      locked: !this.state.gateUnlocked,
+      entryPassword: this.state.entryPassword,
+      setEntryPassword: function (e) { self.setEntryPassword(e && e.target ? e.target.value : ''); },
+      entryDisclaimer: this.state.entryDisclaimer,
+      setEntryDisclaimer: function (e) { self.setEntryDisclaimer(e && e.target ? e.target.checked : false); },
+      entryRemember: this.state.entryRemember,
+      setEntryRemember: function (e) { self.setEntryRemember(e && e.target ? e.target.checked : false); },
+      entryError: this.state.entryError,
+      entryBusy: this.state.entryBusy,
+      entryLabel: this.state.entryBusy ? 'Checking…' : 'Enter site',
+      submitEntry: function () { self.submitEntry(); },
+      entryKey: function (e) { if (e && e.key === 'Enter') self.submitEntry(); },
+
+      // ─── account modal (Log in / Sign up) ───
+      authOpen: this.state.authOpen,
+      openLogin: function () { self.openAuth('login'); },
+      closeAuth: function () { self.closeAuth(); },
       authIsLogin: this.state.authMode === 'login',
       authIsSignup: this.state.authMode === 'signup',
       loginTabBg: this.state.authMode === 'login' ? 'color-mix(in oklab, var(--accent, #8b5cf6) 88%, white)' : 'transparent',
@@ -1820,10 +1936,8 @@ class Component extends DCLogic {
       switchToSignup: function () { self.setAuthMode('signup'); },
       rememberMe: this.state.rememberMe,
       setRememberMe: function (e) { self.setRememberMe(e && e.target ? e.target.checked : false); },
-      gatePassword: this.state.gatePassword,
-      setGatePassword: function (e) { self.setGatePassword(e && e.target ? e.target.value : ''); },
-      gateDisclaimer: this.state.gateDisclaimer,
-      setGateDisclaimer: function (e) { self.setGateDisclaimer(e && e.target ? e.target.checked : false); },
+      authPasswordPlaceholder: this.state.authMode === 'signup' ? 'Choose a password (6+ characters)' : 'Password',
+      authPasswordAutocomplete: this.state.authMode === 'signup' ? 'new-password' : 'current-password',
       authError: this.state.authError,
       authNotice: this.state.authNotice,
       authBusy: this.state.authBusy,
@@ -1833,6 +1947,7 @@ class Component extends DCLogic {
 
       // ─── account nav + pages ───
       isAuthed: this.state.authed,
+      isGuest: !this.state.authed,
       userEmail: userEmail,
       isOrders: this.state.page === 'orders',
       isAccount: this.state.page === 'account',
