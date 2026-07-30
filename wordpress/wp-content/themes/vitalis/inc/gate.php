@@ -16,9 +16,12 @@
  *
  * The block is a real server-side redirect on `template_redirect`, not a CSS
  * overlay: locked visitors never receive a single byte of page content, so
- * view-source or curl can't walk around it.
+ * view-source or curl can't walk around it. The REST API, `wc-ajax` and
+ * admin-ajax are separate channels that bypass `template_redirect` entirely;
+ * each gets its own guard under "The other doors into the same store".
  *
- * Change the password at: wp-admin → Settings → Vitalis Gate.
+ * There is no default password. An unconfigured gate fails closed and nags in
+ * wp-admin until someone sets one at: Settings → Vitalis Gate.
  *
  * @package vitalis
  */
@@ -29,25 +32,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 const VITALIS_GATE_OPTION  = 'vitalis_gate_hash';
 const VITALIS_GATE_COOKIE  = 'vitalis_gate';
-const VITALIS_GATE_DEFAULT = 'V1T4L1S';        // seeded once; change it in Settings
 const VITALIS_GATE_MAX_TRIES = 10;             // per IP, per window
 const VITALIS_GATE_WINDOW    = 900;            // 15 minutes
+const VITALIS_GATE_MIN_LEN   = 8;              // minimum length when setting one
+
+/**
+ * The password earlier versions of this theme seeded on first run.
+ *
+ * It shipped in the public repository and in DEPLOY-CPANEL.md, so it is not a
+ * secret and is never set anymore. It survives here for one purpose: detecting
+ * an install still running on it, so `vitalis_gate_legacy_notice()` can say so.
+ */
+const VITALIS_GATE_LEGACY_DEFAULT = 'V1T4L1S';
 
 /* -------------------------------------------------------------------------
  * Password storage
  * ---------------------------------------------------------------------- */
 
 /**
- * The stored hash, seeding the default on first run so the site is never
- * accidentally wide open.
+ * The stored hash, or '' when no password has been set yet.
+ *
+ * Nothing is seeded here. A theme-supplied default is public by definition —
+ * anyone who can read the source knows it — so an unconfigured gate fails
+ * closed instead: `vitalis_gate_check()` refuses every candidate and
+ * `vitalis_gate_is_unlocked()` refuses every cookie, locking the storefront
+ * until an admin sets a real password in Settings → Vitalis Gate. Admins are
+ * exempt from the gate, so they can always get in to do it.
  */
 function vitalis_gate_hash() {
-	$hash = get_option( VITALIS_GATE_OPTION );
-	if ( ! $hash ) {
-		$hash = wp_hash_password( VITALIS_GATE_DEFAULT );
-		update_option( VITALIS_GATE_OPTION, $hash, false );
-	}
-	return $hash;
+	return (string) get_option( VITALIS_GATE_OPTION, '' );
+}
+
+/** Whether a site password has been set at all. */
+function vitalis_gate_is_configured() {
+	return '' !== vitalis_gate_hash();
 }
 
 /** Replace the site password. Invalidates every existing unlock cookie. */
@@ -57,7 +75,35 @@ function vitalis_gate_set_password( $plain ) {
 
 /** Constant-time-ish check of a candidate against the stored hash. */
 function vitalis_gate_check( $candidate ) {
-	return wp_check_password( $candidate, vitalis_gate_hash() );
+	$hash = vitalis_gate_hash();
+	if ( '' === $hash ) {
+		return false;
+	}
+	return wp_check_password( $candidate, $hash );
+}
+
+/**
+ * Whether this install is still on the password the theme used to ship with.
+ *
+ * bcrypt is deliberately slow, so the answer is cached against the hash it was
+ * computed from — it only recomputes when the password actually changes.
+ */
+function vitalis_gate_is_legacy_default() {
+	$hash = vitalis_gate_hash();
+	if ( '' === $hash ) {
+		return false;
+	}
+
+	$key    = 'vitalis_gate_legacy_' . md5( $hash );
+	$cached = get_transient( $key );
+	if ( false !== $cached ) {
+		return (bool) $cached;
+	}
+
+	$is_legacy = wp_check_password( VITALIS_GATE_LEGACY_DEFAULT, $hash );
+	set_transient( $key, $is_legacy ? 1 : 0, DAY_IN_SECONDS );
+
+	return $is_legacy;
 }
 
 /* -------------------------------------------------------------------------
@@ -73,6 +119,11 @@ function vitalis_gate_token() {
 }
 
 function vitalis_gate_is_unlocked() {
+	// No password set means no valid token exists — refuse everything rather
+	// than handing out access derived from an empty hash.
+	if ( ! vitalis_gate_is_configured() ) {
+		return false;
+	}
 	if ( empty( $_COOKIE[ VITALIS_GATE_COOKIE ] ) ) {
 		return false;
 	}
@@ -128,14 +179,16 @@ function vitalis_gate_clear_tries() {
  * ---------------------------------------------------------------------- */
 
 /**
- * Requests that must never be gated, or the site becomes unadministrable:
- * wp-admin, the login screen, AJAX, REST, cron, and the CLI.
+ * Callers that are trusted regardless of which door they came through.
+ *
+ * Split out of `vitalis_gate_is_exempt()` because the AJAX and REST guards
+ * below need *this* half and not the other one. The transport-based exemptions
+ * (AJAX, REST) exist so wp-admin keeps working; reusing them to decide whether
+ * an anonymous request may proceed is exactly the mistake that let the Store
+ * API place orders around the gate.
  */
-function vitalis_gate_is_exempt() {
-	if ( is_admin() || wp_doing_ajax() || wp_doing_cron() ) {
-		return true;
-	}
-	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+function vitalis_gate_is_privileged() {
+	if ( wp_doing_cron() ) {
 		return true;
 	}
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -143,6 +196,28 @@ function vitalis_gate_is_exempt() {
 	}
 	// Admins are never locked out of their own store.
 	if ( current_user_can( 'manage_options' ) ) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Requests that must never be gated *by the page-render block*, or the site
+ * becomes unadministrable: wp-admin, the login screen, AJAX, REST, cron, and
+ * the CLI.
+ *
+ * AJAX and REST are exempt here only because `template_redirect` is the wrong
+ * place to police them — they get their own guards, further down, that check
+ * the unlock cookie properly.
+ */
+function vitalis_gate_is_exempt() {
+	if ( is_admin() || wp_doing_ajax() ) {
+		return true;
+	}
+	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		return true;
+	}
+	if ( vitalis_gate_is_privileged() ) {
 		return true;
 	}
 	return (bool) apply_filters( 'vitalis_gate_exempt', false );
@@ -293,6 +368,175 @@ function vitalis_gate_render( $error = '' ) {
 }
 
 /* -------------------------------------------------------------------------
+ * The other doors into the same store
+ *
+ * `template_redirect` only guards page renders. WordPress and WooCommerce
+ * answer on three more channels that never reach it, and each one used to walk
+ * straight past the gate:
+ *
+ *   /wp-json/…            the REST API, including WooCommerce's Store API,
+ *                         which will read the catalog *and place orders*
+ *   /?wc-ajax=…           WC_AJAX, hooked to template_redirect at priority 0 —
+ *                         ahead of the gate at priority 1
+ *   /wp-admin/admin-ajax  WooCommerce's front-end AJAX actions
+ *
+ * All three are now held to the same unlock cookie as a normal page view.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * REST routes an unlocked-out visitor may still reach.
+ *
+ * Empty by design: this storefront's cart, checkout and account pages are the
+ * classic WooCommerce shortcodes, which use admin-ajax and `wc-ajax` rather
+ * than REST, so nothing on the front end needs an anonymous REST route. Add
+ * prefixes here (e.g. '/wc/store/v1/products') only if you switch a page over
+ * to the block versions, which do talk to the Store API.
+ *
+ * @return string[] Route prefixes.
+ */
+function vitalis_gate_rest_public_routes() {
+	return (array) apply_filters( 'vitalis_gate_rest_public_routes', array() );
+}
+
+/** The route being dispatched, as set by rest_api_loaded() on parse_request. */
+function vitalis_gate_current_rest_route() {
+	if ( ! empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
+		return '/' . ltrim( (string) $GLOBALS['wp']->query_vars['rest_route'], '/' );
+	}
+	return '';
+}
+
+/**
+ * Require the gate for anonymous REST requests.
+ *
+ * Logged-in users pass: that covers wp-admin, WooCommerce Analytics, the block
+ * editor and any WooCommerce API key, all of which resolve a user before this
+ * filter runs. Core's own cookie/nonce check still runs afterwards at priority
+ * 100, so this only ever adds a requirement.
+ *
+ * @param WP_Error|null|true $result Result of any earlier authentication check.
+ * @return WP_Error|null|true
+ */
+function vitalis_gate_rest_guard( $result ) {
+	// Someone has already decided this request's fate — don't overrule them.
+	if ( ! empty( $result ) ) {
+		return $result;
+	}
+	if ( is_user_logged_in() || vitalis_gate_is_privileged() ) {
+		return $result;
+	}
+	if ( vitalis_gate_is_unlocked() ) {
+		return $result;
+	}
+
+	$route = vitalis_gate_current_rest_route();
+	foreach ( vitalis_gate_rest_public_routes() as $prefix ) {
+		if ( '' !== $prefix && 0 === strpos( $route, $prefix ) ) {
+			return $result;
+		}
+	}
+
+	return new WP_Error(
+		'vitalis_gate_locked',
+		__( 'This site is private. Enter the site password to continue.', 'vitalis' ),
+		array( 'status' => 401 )
+	);
+}
+add_filter( 'rest_authentication_errors', 'vitalis_gate_rest_guard', 10 );
+
+/**
+ * Unregister the Store API checkout route entirely.
+ *
+ * The gate's password confirmation and the "referred by" field are validated on
+ * `woocommerce_checkout_process` / `woocommerce_after_checkout_validation`,
+ * which only fire inside WC_Checkout::process_checkout() — the classic path.
+ * The Store API runs its own pipeline, so POST /wc/store/v1/checkout created
+ * orders with no password, no referrer and an auto-generated account.
+ *
+ * This store checks out through the `[woocommerce_checkout]` shortcode, so the
+ * route has no legitimate caller. If you ever move to the checkout *block*,
+ * return false from `vitalis_gate_block_store_api_checkout` — the order guard
+ * below then becomes the enforcement point, and your block will need to send
+ * the password and referrer in `extensions.vitalis`.
+ */
+function vitalis_gate_unregister_store_checkout( $endpoints ) {
+	if ( ! apply_filters( 'vitalis_gate_block_store_api_checkout', true ) ) {
+		return $endpoints;
+	}
+
+	foreach ( array_keys( $endpoints ) as $route ) {
+		if ( preg_match( '#^/wc/store(/v\d+)?/checkout#', $route ) ) {
+			unset( $endpoints[ $route ] );
+		}
+	}
+
+	return $endpoints;
+}
+add_filter( 'rest_endpoints', 'vitalis_gate_unregister_store_checkout' );
+
+/**
+ * Second layer: if a Store API order is ever built, hold it to the same rules
+ * as a classic one. Unreachable while the route above is unregistered.
+ *
+ * @param WC_Order        $order   Draft order.
+ * @param WP_REST_Request $request The checkout request.
+ */
+function vitalis_gate_store_api_guard( $order, $request ) {
+	$exception = '\Automattic\WooCommerce\StoreApi\Exceptions\RouteException';
+	if ( ! class_exists( $exception ) ) {
+		return;
+	}
+
+	$ext      = isset( $request['extensions']['vitalis'] ) ? (array) $request['extensions']['vitalis'] : array();
+	$password = isset( $ext['password'] ) ? (string) $ext['password'] : '';
+	$referral = isset( $ext['referral'] ) ? vitalis_referral_clean( $ext['referral'] ) : '';
+
+	if ( ! is_user_logged_in() ) {
+		throw new $exception( 'vitalis_account_required', __( 'You must be signed in to place an order.', 'vitalis' ), 403 );
+	}
+	if ( ! vitalis_gate_check( $password ) ) {
+		throw new $exception( 'vitalis_gate_password', __( 'Incorrect site password.', 'vitalis' ), 403 );
+	}
+	if ( '' === $referral || false === strpos( $referral, ' ' ) ) {
+		throw new $exception( 'vitalis_referral_required', __( 'Please enter the full name of the person who referred you.', 'vitalis' ), 403 );
+	}
+
+	$order->update_meta_data( VITALIS_REFERRAL_META, $referral );
+}
+add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'vitalis_gate_store_api_guard', 10, 2 );
+
+/**
+ * Require the gate for the store's AJAX endpoints.
+ *
+ * Runs on `wp_loaded`, which fires for both `/?wc-ajax=…` (before WC_AJAX picks
+ * it up on template_redirect) and `/wp-admin/admin-ajax.php` (which boots
+ * WordPress the same way). Only store actions are guarded — core's own
+ * anonymous AJAX is left alone so nothing unrelated breaks.
+ */
+function vitalis_gate_guard_ajax() {
+	$wc_ajax = isset( $_GET['wc-ajax'] ) ? sanitize_key( wp_unslash( $_GET['wc-ajax'] ) ) : '';
+	$action  = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+
+	$is_store_ajax = '' !== $wc_ajax
+		|| ( wp_doing_ajax() && '' !== $action && preg_match( '/^(wc|woocommerce)[-_]/', $action ) );
+
+	if ( ! $is_store_ajax ) {
+		return;
+	}
+	if ( vitalis_gate_is_privileged() || vitalis_gate_is_unlocked() ) {
+		return;
+	}
+
+	status_header( 401 );
+	nocache_headers();
+	wp_send_json(
+		array( 'error' => __( 'This site is private. Enter the site password to continue.', 'vitalis' ) ),
+		401
+	);
+}
+add_action( 'wp_loaded', 'vitalis_gate_guard_ajax', 0 );
+
+/* -------------------------------------------------------------------------
  * Checkout: require the same password again, per order
  * ---------------------------------------------------------------------- */
 
@@ -314,8 +558,19 @@ function vitalis_gate_checkout_field() {
 }
 add_action( 'woocommerce_review_order_before_submit', 'vitalis_gate_checkout_field' );
 
-/** Server-side check — the order is refused unless the password matches. */
+/**
+ * Server-side check — the order is refused unless the password matches.
+ *
+ * Shares the front gate's attempt counter. Without it this field was an
+ * unmetered oracle for the site password: the gate itself stops after ten
+ * wrong guesses, but checkout would take them all day.
+ */
 function vitalis_gate_validate_checkout() {
+	if ( vitalis_gate_tries() >= VITALIS_GATE_MAX_TRIES ) {
+		wc_add_notice( 'Too many incorrect password attempts. Please wait 15 minutes and try again.', 'error' );
+		return;
+	}
+
 	$candidate = isset( $_POST['vitalis_order_password'] ) ? wp_unslash( $_POST['vitalis_order_password'] ) : '';
 
 	if ( '' === $candidate ) {
@@ -323,14 +578,47 @@ function vitalis_gate_validate_checkout() {
 		return;
 	}
 	if ( ! vitalis_gate_check( $candidate ) ) {
+		vitalis_gate_record_try();
 		wc_add_notice( 'Incorrect password — please check with your referrer.', 'error' );
+		return;
 	}
+
+	vitalis_gate_clear_tries();
 }
 add_action( 'woocommerce_after_checkout_validation', 'vitalis_gate_validate_checkout' );
 
 /* -------------------------------------------------------------------------
  * Settings → Vitalis Gate
  * ---------------------------------------------------------------------- */
+
+/**
+ * Say so, loudly and on every admin screen, when the gate isn't protecting
+ * anything: either no password has been set, or it's still the one that shipped
+ * in the repository.
+ */
+function vitalis_gate_admin_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$settings = admin_url( 'options-general.php?page=vitalis-gate' );
+
+	if ( ! vitalis_gate_is_configured() ) {
+		printf(
+			'<div class="notice notice-error"><p><strong>Vitalis Gate:</strong> no site password is set, so the storefront is closed to everyone. <a href="%s">Set one now</a>.</p></div>',
+			esc_url( $settings )
+		);
+		return;
+	}
+
+	if ( vitalis_gate_is_legacy_default() ) {
+		printf(
+			'<div class="notice notice-error"><p><strong>Vitalis Gate:</strong> this site is still using the password the theme used to ship with. It is published in the repository, so the gate and the checkout confirmation currently stop nobody. <a href="%s">Change it now</a>.</p></div>',
+			esc_url( $settings )
+		);
+	}
+}
+add_action( 'admin_notices', 'vitalis_gate_admin_notice' );
 
 function vitalis_gate_settings_page() {
 	add_options_page(
@@ -351,8 +639,11 @@ function vitalis_gate_settings_render() {
 	$notice = '';
 	if ( isset( $_POST['vitalis_gate_new'] ) && check_admin_referer( 'vitalis_gate_settings' ) ) {
 		$new = wp_unslash( $_POST['vitalis_gate_new'] );
-		if ( strlen( $new ) < 4 ) {
-			$notice = '<div class="notice notice-error"><p>Password must be at least 4 characters.</p></div>';
+		if ( strlen( $new ) < VITALIS_GATE_MIN_LEN ) {
+			$notice = '<div class="notice notice-error"><p>Password must be at least '
+				. (int) VITALIS_GATE_MIN_LEN . ' characters.</p></div>';
+		} elseif ( VITALIS_GATE_LEGACY_DEFAULT === $new ) {
+			$notice = '<div class="notice notice-error"><p>That is the password this theme used to ship with — it is published in the repository. Choose a different one.</p></div>';
 		} else {
 			vitalis_gate_set_password( $new );
 			$notice = '<div class="notice notice-success"><p>Site password updated. Everyone will be asked for the new one on their next visit.</p></div>';
@@ -378,7 +669,11 @@ function vitalis_gate_settings_render() {
 					<th scope="row"><label for="vitalis_gate_new">New site password</label></th>
 					<td>
 						<input name="vitalis_gate_new" id="vitalis_gate_new" type="text" class="regular-text" autocomplete="off">
-						<p class="description">Share this with referred customers. Admins are never asked for it.</p>
+						<p class="description">
+							At least <?php echo (int) VITALIS_GATE_MIN_LEN; ?> characters. Share it with referred
+							customers; admins are never asked for it. There is no default — until one is set here,
+							the storefront stays closed.
+						</p>
 					</td>
 				</tr>
 			</table>

@@ -14,11 +14,15 @@
 # cPanel forbids wildcards in deployment tasks, so every file is listed. When you
 # add a theme file, add a matching /bin/cp line here or it will not deploy.
 #
-# THEMEPATH assumes the store is the main domain (public_html). For a subdomain,
-# change it to e.g. $HOME/shop.vitalislabs.com/wp-content/themes/vitalis
+# THEMEPATH must point at the WordPress install itself. The store lives in a
+# SUBDIRECTORY of the docroot — https://vitalislabs.us/wordpress — because the
+# static Supabase storefront occupies public_html/index.html. Drop the
+# /wordpress segment and the theme copies to a directory WordPress never reads:
+# the deploy reports success and nothing changes. For a subdomain instead, use
+# e.g. $HOME/shop.vitalislabs.com/wp-content/themes/vitalis
 deployment:
   tasks:
-    - export THEMEPATH=$HOME/public_html/wp-content/themes/vitalis
+    - export THEMEPATH=$HOME/public_html/wordpress/wp-content/themes/vitalis
     - export SRC=wordpress/wp-content/themes/vitalis
     - /bin/mkdir -p $THEMEPATH/inc
     - /bin/mkdir -p $THEMEPATH/woocommerce
@@ -32,9 +36,12 @@ deployment:
     - /bin/cp $SRC/footer.php $THEMEPATH/footer.php
     - /bin/cp $SRC/front-page.php $THEMEPATH/front-page.php
 
-    # Includes — password gate, referral field, Venmo gateway, SMTP
+    # Includes — password gate, account requirement, referral field, hardening,
+    # Venmo gateway, SMTP
     - /bin/cp $SRC/inc/gate.php $THEMEPATH/inc/gate.php
+    - /bin/cp $SRC/inc/account.php $THEMEPATH/inc/account.php
     - /bin/cp $SRC/inc/referral.php $THEMEPATH/inc/referral.php
+    - /bin/cp $SRC/inc/hardening.php $THEMEPATH/inc/hardening.php
     - /bin/cp $SRC/inc/venmo.php $THEMEPATH/inc/venmo.php
     - /bin/cp $SRC/inc/mail.php $THEMEPATH/inc/mail.php
 
@@ -42,6 +49,7 @@ deployment:
     - /bin/cp $SRC/woocommerce/content-product.php $THEMEPATH/woocommerce/content-product.php
 
     # Theme assets
+    - /bin/cp $SRC/assets/nav.js $THEMEPATH/assets/nav.js
     - /bin/cp $SRC/assets/long_logo.png $THEMEPATH/assets/long_logo.png
     - /bin/cp $SRC/assets/bpc-157.png $THEMEPATH/assets/bpc-157.png
     - /bin/cp $SRC/assets/ghk-cu.png $THEMEPATH/assets/ghk-cu.png

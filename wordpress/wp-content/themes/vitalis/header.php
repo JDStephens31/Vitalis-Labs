@@ -43,35 +43,44 @@ $vitalis_logo = get_template_directory_uri() . '/assets/long_logo.png';
 		</a>
 
 		<nav class="main-nav" aria-label="Primary">
-			<?php
-			if ( has_nav_menu( 'primary' ) ) {
-				wp_nav_menu( array(
-					'theme_location' => 'primary',
-					'container'      => false,
-					'depth'          => 1,
-					'fallback_cb'    => false,
-				) );
-			} else {
-				echo '<ul>';
-				echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">Catalog</a></li>';
-				if ( function_exists( 'wc_get_page_id' ) ) {
-					echo '<li><a href="' . esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ) . '">Shop</a></li>';
-					if ( is_user_logged_in() ) {
-						echo '<li><a href="' . esc_url( wc_get_account_endpoint_url( 'orders' ) ) . '">My Orders</a></li>';
-					}
-					echo '<li><a href="' . esc_url( get_permalink( wc_get_page_id( 'myaccount' ) ) ) . '">' . ( is_user_logged_in() ? 'Account' : 'Log in' ) . '</a></li>';
-				}
-				echo '</ul>';
-			}
-			?>
+			<?php vitalis_nav_links(); ?>
 		</nav>
 
-		<?php if ( function_exists( 'wc_get_cart_url' ) ) : ?>
-			<div class="header-cart">
-				<a href="<?php echo esc_url( wc_get_cart_url() ); ?>">
-					Cart <span class="cart-count">(<?php echo esc_html( WC()->cart ? WC()->cart->get_cart_contents_count() : 0 ); ?>)</span>
-				</a>
-			</div>
-		<?php endif; ?>
+		<div class="header-actions">
+			<?php if ( function_exists( 'wc_get_cart_url' ) ) : ?>
+				<div class="header-cart">
+					<a href="<?php echo esc_url( wc_get_cart_url() ); ?>">
+						<span class="header-cart__label">Cart</span> <span class="cart-count">(<?php echo esc_html( WC()->cart ? WC()->cart->get_cart_contents_count() : 0 ); ?>)</span>
+					</a>
+				</div>
+			<?php endif; ?>
+
+			<button type="button" class="nav-toggle" id="vitalis-nav-toggle"
+				aria-expanded="false" aria-controls="vitalis-mobile-nav">
+				<span class="nav-toggle__box" aria-hidden="true">
+					<span class="nav-toggle__bar"></span>
+					<span class="nav-toggle__bar"></span>
+					<span class="nav-toggle__bar"></span>
+				</span>
+				<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'vitalis' ); ?></span>
+			</button>
+		</div>
 	</div>
+
+	<!--
+		Mobile drawer. Hidden by default and opened by assets/nav.js; the noscript
+		block below reverses that so the links stay reachable without JavaScript
+		(the desktop nav is display:none at this width).
+	-->
+	<div class="mobile-nav" id="vitalis-mobile-nav" hidden>
+		<nav class="vitalis-wrap" aria-label="<?php esc_attr_e( 'Mobile', 'vitalis' ); ?>">
+			<?php vitalis_nav_links(); ?>
+		</nav>
+	</div>
+	<noscript>
+		<style>
+			.mobile-nav[hidden] { display: block !important; }
+			.nav-toggle { display: none !important; }
+		</style>
+	</noscript>
 </header>

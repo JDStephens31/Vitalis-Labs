@@ -173,16 +173,12 @@ function vitalis_venmo_qr_url() {
 }
 
 /**
- * What the customer should put in the Venmo note so you can match the payment.
- * Deliberately just the order number and name — a Venmo note can be public, so
- * the phone number and shipping address are left out.
+ * What the customer should put in the Venmo note: the gift emoji, nothing else.
+ * A Venmo note can be public, so no order number, name, or anything describing
+ * what was bought goes in it — payments are matched by amount and sender.
  */
 function vitalis_venmo_note( $order ) {
-	return sprintf(
-		"Order %s / %s",
-		$order->get_order_number(),
-		trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() )
-	);
+	return '🎁';
 }
 
 /** True when this order was placed with the Venmo method. */
@@ -233,6 +229,10 @@ function vitalis_venmo_block_html( $order ) {
 						<td style="padding:0 16px 14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;color:#6a6974;">SEND TO</td>
 						<td align="right" style="padding:0 16px 14px;font-size:15px;font-weight:600;color:#16151c;"><?php echo esc_html( $s['handle'] ); ?></td>
 					</tr>
+					<tr>
+						<td style="padding:0 16px 14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;color:#6a6974;">SEND AS</td>
+						<td align="right" style="padding:0 16px 14px;font-size:15px;font-weight:600;color:#16151c;">Family &amp; friends</td>
+					</tr>
 				</table>
 
 				<!-- QR -->
@@ -254,18 +254,38 @@ function vitalis_venmo_block_html( $order ) {
 
 				<!-- the note to paste -->
 				<div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:#8a8992;margin-bottom:6px;">
-					PASTE THIS AS YOUR VENMO NOTE
+					YOUR VENMO COMMENT — THIS EMOJI ONLY
 				</div>
-				<div style="background:#f4f3f7;border:1px solid #e6e4ec;border-radius:3px;padding:12px 14px;font-family:'Space Mono',monospace;font-size:13px;color:#24232a;margin-bottom:18px;">
+				<div style="background:#f4f3f7;border:1px solid #e6e4ec;border-radius:3px;padding:12px 14px;font-size:22px;line-height:1;color:#24232a;margin-bottom:8px;text-align:center;">
 					<?php echo esc_html( $note ); ?>
+				</div>
+				<div style="font-size:12.5px;line-height:1.6;color:#6a6974;margin-bottom:18px;">
+					No words, no order number, no product names — just the emoji.
 				</div>
 
 				<!-- steps -->
 				<ol style="margin:0 0 4px;padding-left:20px;font-size:13.5px;line-height:1.75;color:#34333b;">
 					<li>Open Venmo and scan the QR code (or tap <em>Open in Venmo</em>).</li>
 					<li>Send <strong><?php echo wp_kses_post( $amount ); ?></strong> to <strong><?php echo esc_html( $s['handle'] ); ?></strong>.</li>
-					<li>Paste the note above so we can match your payment to this order.</li>
+					<li>Choose <strong>Family &amp; friends</strong> — not goods &amp; services.</li>
+					<li>Put <strong><?php echo esc_html( $note ); ?></strong> and nothing else in the comment.</li>
 				</ol>
+
+				<!-- the rule -->
+				<table cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:18px 0 0;border:1px solid #e6c9c9;border-radius:3px;background:#fdf6f6;">
+					<tr>
+						<td style="padding:14px 16px;font-family:'Space Grotesk',Arial,Helvetica,sans-serif;">
+							<div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:#a04747;margin-bottom:6px;">
+								PLEASE READ
+							</div>
+							<p style="margin:0;font-size:13px;line-height:1.65;color:#34333b;">
+								Payments sent as <strong>goods &amp; services</strong>, or with any words in the
+								comment, will be refunded and the sender blocked. Family &amp; friends with the
+								<?php echo esc_html( $note ); ?> emoji only.
+							</p>
+						</td>
+					</tr>
+				</table>
 
 				<?php if ( $s['instructions'] ) : ?>
 					<p style="margin:16px 0 0;font-size:12.5px;line-height:1.6;color:#6a6974;">
@@ -290,14 +310,18 @@ function vitalis_venmo_block_text( $order ) {
 		sprintf( 'Amount to send: %s', wp_strip_all_tags( $order->get_formatted_order_total() ) ),
 		sprintf( 'Order number:   %s', $order->get_order_number() ),
 		sprintf( 'Send to:        %s (Venmo)', $s['handle'] ),
+		'Send as:        Family & friends (NOT goods & services)',
 		'',
-		sprintf( 'Venmo note:     %s', vitalis_venmo_note( $order ) ),
+		sprintf( 'Venmo comment:  %s   <- this emoji only, no words', vitalis_venmo_note( $order ) ),
 	);
 
 	if ( $s['link'] ) {
 		$lines[] = sprintf( 'Pay here:       %s', $s['link'] );
 	}
 
+	$lines[] = '';
+	$lines[] = 'Payments sent as goods & services, or with any words in the comment,';
+	$lines[] = 'will be refunded and the sender blocked.';
 	$lines[] = '';
 	$lines[] = 'Your order is prepared once payment is received.';
 

@@ -82,6 +82,19 @@ $WP option update woocommerce_task_list_complete 'yes' >/dev/null 2>&1 || true
 # Manage stock at the store level so quantities show live like the old site.
 $WP option update woocommerce_manage_stock "yes"
 
+# Accounts. Every order must belong to a customer account, so guest checkout is
+# off and customers can register from the checkout and My Account pages.
+# The theme enforces this in code too (inc/account.php) — these options keep the
+# database in agreement, so wp-admin shows the same story the site behaves like.
+$WP option update woocommerce_enable_guest_checkout "no"
+$WP option update woocommerce_enable_signup_and_login_from_checkout "yes"
+$WP option update woocommerce_enable_myaccount_registration "yes"
+$WP option update woocommerce_enable_checkout_login_reminder "yes"
+
+# WordPress-level registration stays off: accounts are created by WooCommerce at
+# checkout, not through wp-login.php?action=register.
+$WP option update users_can_register "0"
+
 # Newer WooCommerce ships "Coming soon" mode ON by default, which hides the
 # shop/cart/checkout/account pages behind a placeholder. Turn it off so the
 # store is live.
