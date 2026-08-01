@@ -37,19 +37,21 @@ deployment:
     - /bin/cp $SRC/front-page.php $THEMEPATH/front-page.php
 
     # Includes — password gate, account requirement, referral field, hardening,
-    # Venmo gateway, SMTP
+    # Venmo gateway, SMTP, lab reports
     - /bin/cp $SRC/inc/gate.php $THEMEPATH/inc/gate.php
     - /bin/cp $SRC/inc/account.php $THEMEPATH/inc/account.php
     - /bin/cp $SRC/inc/referral.php $THEMEPATH/inc/referral.php
     - /bin/cp $SRC/inc/hardening.php $THEMEPATH/inc/hardening.php
     - /bin/cp $SRC/inc/venmo.php $THEMEPATH/inc/venmo.php
     - /bin/cp $SRC/inc/mail.php $THEMEPATH/inc/mail.php
+    - /bin/cp $SRC/inc/lab-tests.php $THEMEPATH/inc/lab-tests.php
 
     # WooCommerce template overrides
     - /bin/cp $SRC/woocommerce/content-product.php $THEMEPATH/woocommerce/content-product.php
 
     # Theme assets
     - /bin/cp $SRC/assets/nav.js $THEMEPATH/assets/nav.js
+    - /bin/cp $SRC/assets/admin-lab-tests.js $THEMEPATH/assets/admin-lab-tests.js
     - /bin/cp $SRC/assets/long_logo.png $THEMEPATH/assets/long_logo.png
     - /bin/cp $SRC/assets/bpc-157.png $THEMEPATH/assets/bpc-157.png
     - /bin/cp $SRC/assets/ghk-cu.png $THEMEPATH/assets/ghk-cu.png

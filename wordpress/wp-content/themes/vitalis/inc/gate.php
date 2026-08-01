@@ -288,6 +288,16 @@ function vitalis_gate_render( $error = '' ) {
 	nocache_headers();
 	header( 'X-Robots-Tag: noindex, nofollow', true );
 
+	// Core advertises the REST root from wp_head/template_redirect, neither of
+	// which runs once we exit here — so a locked site looked to API clients like
+	// a site with no REST API at all. The WordPress app discovers the API from
+	// this header before it has any credentials to offer; without it, it can only
+	// report the site as private. The header exposes the endpoint URL, not access
+	// to it: vitalis_gate_rest_guard() still refuses every route but the index.
+	if ( function_exists( 'rest_url' ) ) {
+		header( 'Link: <' . esc_url_raw( rest_url() ) . '>; rel="https://api.w.org/"', false );
+	}
+
 	$logo = get_template_directory_uri() . '/assets/long_logo.png';
 	?>
 <!doctype html>
@@ -398,6 +408,30 @@ function vitalis_gate_rest_public_routes() {
 	return (array) apply_filters( 'vitalis_gate_rest_public_routes', array() );
 }
 
+/**
+ * Routes an anonymous caller may reach, matched *exactly* rather than by prefix.
+ *
+ * Just the API index. Anything that authenticates with an Application Password
+ * — the WordPress mobile app included — has to read `/wp-json/` before it can
+ * log in, because that response is where it finds the authorization endpoint.
+ * Refusing it is why the app reports the site as password-protected and stops:
+ * it never gets far enough to offer credentials.
+ *
+ * The index carries the site title, description, URL and the list of route
+ * names. It carries no posts, products, prices, customers or orders.
+ *
+ * This is deliberately separate from vitalis_gate_rest_public_routes(), which
+ * matches on prefix. The index cannot go there: its route is '/', and '/' is a
+ * prefix of every route in the API, so adding it would open the whole surface
+ * — /wc/store/v1/products included, which publishes the catalog the gate
+ * exists to keep private.
+ *
+ * @return string[] Exact route names.
+ */
+function vitalis_gate_rest_public_exact_routes() {
+	return (array) apply_filters( 'vitalis_gate_rest_public_exact_routes', array( '/' ) );
+}
+
 /** The route being dispatched, as set by rest_api_loaded() on parse_request. */
 function vitalis_gate_current_rest_route() {
 	if ( ! empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
@@ -430,6 +464,13 @@ function vitalis_gate_rest_guard( $result ) {
 	}
 
 	$route = vitalis_gate_current_rest_route();
+
+	// Exact matches first. An empty route means we couldn't tell what was being
+	// dispatched, which is never a match.
+	if ( '' !== $route && in_array( $route, vitalis_gate_rest_public_exact_routes(), true ) ) {
+		return $result;
+	}
+
 	foreach ( vitalis_gate_rest_public_routes() as $prefix ) {
 		if ( '' !== $prefix && 0 === strpos( $route, $prefix ) ) {
 			return $result;

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'VITALIS_VERSION', '1.6.0' );
+define( 'VITALIS_VERSION', '1.7.0' );
 
 /**
  * Site password gate — blocks the storefront until the shared password and the
@@ -33,6 +33,9 @@ require_once get_template_directory() . '/inc/venmo.php';
 
 /** SMTP delivery — without this, wp_mail() has no transport in Docker. */
 require_once get_template_directory() . '/inc/mail.php';
+
+/** Per-product lab reports (COAs) — admin uploader + the "Lab Tests" product tab. */
+require_once get_template_directory() . '/inc/lab-tests.php';
 
 /**
  * Theme setup.
@@ -132,7 +135,6 @@ function vitalis_nav_links() {
 	}
 
 	echo '<ul>';
-	echo '<li><a href="' . esc_url( home_url( '/' ) ) . '">Catalog</a></li>';
 	if ( function_exists( 'wc_get_page_id' ) ) {
 		echo '<li><a href="' . esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ) . '">Shop</a></li>';
 		if ( is_user_logged_in() ) {

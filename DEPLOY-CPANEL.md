@@ -215,6 +215,63 @@ and signs all visitors back out.
 - **HTTPS** — issue an AutoSSL/Let's Encrypt cert and confirm the WordPress Address
   and Site Address use `https://`. The gate cookie should only travel over TLS.
 
+## The WordPress mobile app
+
+The app signs in with an **Application Password**, not your login password:
+wp-admin → Users → your profile → Application Passwords → add one, then paste it
+into the app. Two server-side conditions have to hold first.
+
+**HTTPS.** WordPress hides Application Passwords entirely on a plain-HTTP site,
+and the app then has nothing to authenticate with. The REST index at
+`/wp-json/` should list the pairing endpoint:
+
+```bash
+curl -s https://vitalislabs.us/wordpress/wp-json/ | grep -o 'application-passwords'
+```
+
+Empty output means the cert or the site URL isn't right yet.
+
+**Apache must pass the `Authorization` header to PHP.** Under CGI/FastCGI —
+which is how most cPanel plans run PHP — Apache drops it, so every
+app-password request arrives anonymous and the app reports the site as private
+no matter what you paste in. Confirm:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  -u 'YOUR_USER:xxxx xxxx xxxx xxxx xxxx xxxx' \
+  https://vitalislabs.us/wordpress/wp-json/wp/v2/users/me
+```
+
+`200` is correct. `401` with a valid password means the header is being
+stripped; add this to the WordPress `.htaccess`, above the `# BEGIN WordPress`
+block:
+
+```apache
+CGIPassAuth On
+```
+
+If your plan disallows `CGIPassAuth`, use this instead:
+
+```apache
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+```
+
+**What the gate allows, and what it doesn't.** The app needs to read
+`/wp-json/` before it has credentials, so the gate lets that one route through
+anonymously — site title, description, URL and route names, no content. Every
+other route still requires the password or a logged-in user. Do **not**
+"whitelist `/wp-json/*`" to fix an app problem: `/wp-json/wc/store/v1/products`
+lives under that path and would publish the entire catalog, prices and SKUs
+included, to anyone who asks. Re-run the `wc/store/v1/products` check above
+after any change.
+
+**XML-RPC stays off.** [`inc/hardening.php`](wordpress/wp-content/themes/vitalis/inc/hardening.php)
+disables it. The current app doesn't need it; only a very old client would, and
+re-enabling it reopens brute-force amplification via `system.multicall`.
+
 ## Updating the theme later
 
 ```bash
