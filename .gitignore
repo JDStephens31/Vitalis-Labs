@@ -1,5 +1,2 @@
 /dont-push
 /.env
-
-# Live DB credentials + salts. Never commit — see DEPLOY-CPANEL.md.
-wp-config.php
